@@ -95,19 +95,21 @@ public class App extends Application {
 		hbox.setSpacing(10); // Gap between nodes
 		hbox.setStyle("-fx-background-color: #336699;");
 
-		Button btnStart = new Button("Start");
-		btnStart.setPrefSize(100, 20);
+		Button btnCreate = new Button("Create Client");
+		btnCreate.setPrefSize(100, 20);
 		
-		btnStart.setOnAction(new EventHandler<ActionEvent>() {
+		btnCreate.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
 				System.out.println("Creating new client: " + clientCounter++);
+				new Client();
 			}
+			
 		});
 		
-		Button btnStop = new Button("Stop");
-		btnStop.setPrefSize(100, 20);
+		Button btnStart = new Button("Start Server");
+		btnStart.setPrefSize(100, 20);
 
-		hbox.getChildren().addAll(btnStart, btnStop);
+		hbox.getChildren().addAll(btnCreate, btnStart);
 
 		return hbox;
 	}
