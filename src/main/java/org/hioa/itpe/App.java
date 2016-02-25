@@ -1,6 +1,9 @@
 package org.hioa.itpe;
 
+import javafx.event.EventHandler;
+
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
@@ -43,6 +46,8 @@ public class App extends Application {
 	public static void main(String[] args) {
 		launch(App.class, args);
 	}
+
+	public static int clientCounter = 0;
 
 	@Override
 	public void start(Stage stage) {
@@ -90,13 +95,19 @@ public class App extends Application {
 		hbox.setSpacing(10); // Gap between nodes
 		hbox.setStyle("-fx-background-color: #336699;");
 
-		Button buttonCurrent = new Button("Start");
-		buttonCurrent.setPrefSize(100, 20);
+		Button btnStart = new Button("Start");
+		btnStart.setPrefSize(100, 20);
+		
+		btnStart.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				System.out.println("Creating new client: " + clientCounter++);
+			}
+		});
+		
+		Button btnStop = new Button("Stop");
+		btnStop.setPrefSize(100, 20);
 
-		Button buttonProjected = new Button("Stop");
-		buttonProjected.setPrefSize(100, 20);
-
-		hbox.getChildren().addAll(buttonCurrent, buttonProjected);
+		hbox.getChildren().addAll(btnStart, btnStop);
 
 		return hbox;
 	}
@@ -163,26 +174,26 @@ public class App extends Application {
 	 * Creates a horizontal (default) tile pane with four icons in one row
 	 */
 	private TilePane addTilePane() {
-        
-        TilePane tile = new TilePane();
-        tile.setPadding(new Insets(5, 0, 5, 0));
-        tile.setVgap(4);
-        tile.setHgap(4);
-        tile.setPrefColumns(1);
-        tile.setMaxWidth(25);
-        tile.setMaxHeight(1024);
-        tile.setStyle("-fx-background-color: DAE6F3;");
-        tile.getChildren().add(new Text("Clients"));
-        
-        String[] imageNames ={"red","yellow","green","none"};
-        
-        for(String name : imageNames){
-        	ImageView image = new ImageView(new Image(App.class.getResourceAsStream("graphics/" + name + ".png")));
-        	image.setPreserveRatio(true);
-        	image.setFitWidth(80);
-        	tile.getChildren().add(image);
-        }
 
-        return tile;
-    }
+		TilePane tile = new TilePane();
+		tile.setPadding(new Insets(5, 0, 5, 0));
+		tile.setVgap(4);
+		tile.setHgap(4);
+		tile.setPrefColumns(1);
+		tile.setMaxWidth(25);
+		tile.setMaxHeight(1024);
+		tile.setStyle("-fx-background-color: DAE6F3;");
+		tile.getChildren().add(new Text("Clients"));
+
+		String[] imageNames = { "red", "yellow", "green", "none" };
+
+		for (String name : imageNames) {
+			ImageView image = new ImageView(new Image(App.class.getResourceAsStream("graphics/" + name + ".png")));
+			image.setPreserveRatio(true);
+			image.setFitWidth(80);
+			tile.getChildren().add(image);
+		}
+
+		return tile;
+	}
 }
