@@ -2,7 +2,15 @@ package org.hioa.itpe;
 
 import javafx.event.EventHandler;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableNumberValue;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -48,6 +56,8 @@ public class App extends Application {
 	}
 
 	public static int clientCounter = 0;
+	public static int serverCounter = 0;
+	private boolean serverStarted=false;
 
 	@Override
 	public void start(Stage stage) {
@@ -101,13 +111,27 @@ public class App extends Application {
 		btnCreate.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
 				System.out.println("Creating new client: " + clientCounter++);
-				new Client();
+				new ClientGUI();
 			}
 			
 		});
 		
-		Button btnStart = new Button("Start Server");
+		final Button btnStart = new Button("Start Server");
 		btnStart.setPrefSize(100, 20);
+
+		
+		
+		btnStart.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event){
+				System.out.println("Clicking button to start server.");
+				
+					//ServerSocket serverSocket = new ServerSocket(8080);
+					new Thread(new Server()).start();
+					btnStart.setDisable(true);
+			
+				
+			}
+		});
 
 		hbox.getChildren().addAll(btnCreate, btnStart);
 
