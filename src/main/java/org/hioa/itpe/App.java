@@ -18,6 +18,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -39,6 +41,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+
+
 /**
  * Sample application that shows examples of the different layout panes provided
  * by the JavaFX layout API. The resulting UI is for demonstration purposes only
@@ -46,7 +50,16 @@ import javafx.stage.Stage;
  */
 
 public class App extends Application {
-
+	
+	private TableView clientTable;
+	private TableColumn chkboxColumn;
+	private TableColumn ipColumn;
+	private TableColumn portColumn;
+	private TableColumn idColumn;
+	private TableColumn intersectColumn;
+	private TableColumn statusColumn;
+	
+	
 	/**
 	 * @param args
 	 *            the command line arguments
@@ -221,5 +234,19 @@ public class App extends Application {
 		}
 
 		return tile;
+	}
+	
+	private void buildCientTable() {
+		clientTable = new TableView<>();
+		clientTable.setEditable(false);
+		clientTable.setPrefSize(400, 400); // width, height
+		
+		chkboxColumn = new TableColumn<>();
+		ipColumn = new TableColumn<>();
+		portColumn;
+		idColumn;
+		intersectColumn;
+		statusColumn;
+		
 	}
 }
