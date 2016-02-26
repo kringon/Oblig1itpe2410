@@ -27,6 +27,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
@@ -122,7 +124,8 @@ public class App extends Application {
 
 		GridPane centerGrid = new GridPane();
 		centerGrid.setMinSize(768, 1024);
-		border.setCenter(centerGrid);
+		//border.setCenter(centerGrid);
+		border.setRight(addGridPane());
 
 		Scene scene = new Scene(border);
 		stage.setScene(scene);
@@ -359,6 +362,106 @@ public class App extends Application {
 		}
 		
 		
+	}
+	
+	private GridPane addGridPane() {
+
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(12);
+
+		Label ctrlLabel = new Label("Control Panel");
+		Label autLabel = new Label("Automatic Cycle");
+		Label staLabel = new Label("Status");
+		Label intLabel = new Label("Interval");
+		final int MIN =1;
+		final int MAX =60;
+		final int INITIAL =30;
+		final int STEP =1;
+		
+		
+		Label greenLabel = new Label("Green");
+		final Spinner greenSpinner = new Spinner();
+	    greenSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX,INITIAL,STEP));
+	    greenSpinner.setEditable(false);
+
+		
+
+		Label yellowLabel = new Label("Yellow");
+		final Spinner yellowSpinner = new Spinner();
+	    yellowSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX,INITIAL,STEP));
+	    yellowSpinner.setEditable(false);
+
+
+		Label redLabel = new Label("Red");
+		final Spinner redSpinner = new Spinner();
+	    redSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX,INITIAL,STEP));
+	    redSpinner.setEditable(false);
+	    
+		Button startCycleBtn = new Button("Start Cycle");
+
+		// Manual options starts here.
+		Label manLabel = new Label("Manual");
+		Label manStatusLabel = new Label("Status");
+		Label manIntervalLabel = new Label("Interval");
+		
+		Label manGreenLabel = new Label("Green");
+		Button greenManBtn = new Button("Set");
+		
+		Label manYellowLabel = new Label("Yellow");
+		Button yellowManBtn = new Button("Set");
+		
+		Label manRedLabel = new Label("Red");
+		Button redManBtn = new Button("Set");
+		
+		Label manBlinkYellowLabel = new Label("Blinking");
+		Button blinkManBtn = new Button("Set");
+		
+		Label manOffLabel = new Label("Off");
+		Button offManBtn = new Button("Set");
+		
+		
+		grid.add(ctrlLabel, 0, 0, 2, 1);
+		grid.add(autLabel, 0, 1, 2, 1);
+		
+		grid.add(staLabel, 0, 2, 1, 1);
+		grid.add(intLabel, 1, 2, 1, 1);
+		
+		grid.add(greenLabel, 0, 3, 1, 1);
+		grid.add(greenSpinner, 1, 3, 1, 1);
+		
+		grid.add(yellowLabel, 0,4, 1, 1);
+		grid.add(yellowSpinner, 1, 4, 1, 1);
+		
+		
+		grid.add(redLabel, 0, 5, 1, 1);
+		grid.add(redSpinner, 1, 5, 1, 1);
+		
+		grid.add(startCycleBtn, 0, 6, 2, 1);
+		
+		//manual is starting here
+		grid.add(manLabel, 0, 7, 2, 1);
+		
+		grid.add(manStatusLabel, 0, 8, 1, 1);
+		
+		grid.add(manGreenLabel, 0, 9, 1, 1);
+		grid.add(greenManBtn, 1, 9, 1, 1);
+		
+		grid.add(manYellowLabel, 0, 10, 1, 1);
+		grid.add(yellowManBtn, 1, 10, 1, 1);
+		
+		grid.add(manRedLabel, 0, 11, 1, 1);
+		grid.add(redManBtn, 1, 11, 1, 1);
+		
+		grid.add(manBlinkYellowLabel, 0, 12, 1, 1);
+		grid.add(blinkManBtn, 1, 13, 1, 1);
+		
+		grid.add(manOffLabel, 0, 14, 1, 1);
+		grid.add(offManBtn, 1, 14, 1, 1);
+		
+
+
+		return grid;
 	}
 }
 
