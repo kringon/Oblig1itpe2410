@@ -4,13 +4,21 @@ import javafx.event.EventHandler;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableNumberValue;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -18,8 +26,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -80,7 +91,19 @@ public class App extends Application {
 
 		HBox hbox = addHBox();
 		border.setTop(hbox);
-		border.setLeft(addVBox());
+		//border.setLeft(addVBox());
+		
+		///////////////////////
+		TestClient testClient1 = new TestClient("127.0.0.1", 8080);
+		TestClient testClient2 = new TestClient("127.0.0.1", 8080);
+		List<TestClient> clientList = new ArrayList<TestClient>();
+		clientList.add(testClient1);
+		clientList.add(testClient2);
+		
+		
+		border.setLeft(addClientPane());
+		updateClientTable(clientList);
+		
 
 		// Add a stack to the HBox in the top region
 		addStackPane(hbox);
@@ -89,7 +112,7 @@ public class App extends Application {
 		// the
 		// one you aren't using
 		// border.setRight(addFlowPane());
-		border.setRight(addTilePane());
+		//border.setRight(addTilePane());
 
 		// To see only the grid in the center, comment out the following
 		// statement
@@ -236,17 +259,106 @@ public class App extends Application {
 		return tile;
 	}
 	
-	private void buildCientTable() {
+	private GridPane addClientPane() {
+		GridPane clientPane = new GridPane();
+		
+		Label clientsLabel = new Label("Clients");
+		Label clientsDescription = new Label("Select clients to control");
+		
+		buildClientTable();
+		
+		clientPane.add(clientsLabel, 0, 0);
+		clientPane.add(clientsDescription, 0, 1);
+		clientPane.add(clientTable, 0, 2);
+		
+		return clientPane;
+	}
+	
+	private void buildClientTable() {
 		clientTable = new TableView<>();
 		clientTable.setEditable(false);
-		clientTable.setPrefSize(400, 400); // width, height
+		clientTable.setPrefSize(600, 400); // width, height
 		
-		chkboxColumn = new TableColumn<>();
-		ipColumn = new TableColumn<>();
-		portColumn;
-		idColumn;
-		intersectColumn;
-		statusColumn;
+		// Initialize columns with titles
+		chkboxColumn = new TableColumn<TestClient, Boolean>("Select");
+		ipColumn = new TableColumn<TestClient, String>("IP-address");
+		portColumn = new TableColumn<TestClient, Integer>("Port");
+		idColumn = new TableColumn<TestClient, String>("ID");
+		intersectColumn = new TableColumn<TestClient, String>("Intersection");
+		statusColumn = new TableColumn<TestClient, String>("Status");
+		
+		// Add Columns to the table
+		clientTable.getColumns().addAll(chkboxColumn, ipColumn, 
+				portColumn, idColumn, intersectColumn, statusColumn);
+		
+		ipColumn.setCellValueFactory(new PropertyValueFactory<TestClient, String>("ip"));
+		portColumn.setCellValueFactory(new PropertyValueFactory<TestClient, Integer>("port"));
+		chkboxColumn.setCellValueFactory(new PropertyValueFactory<TestClient, Boolean>("selected"));
+		chkboxColumn.setCellFactory(CheckBoxTableCell.forTableColumn(chkboxColumn));
+		chkboxColumn.setEditable(true);
+		clientTable.setEditable(true);
+		
+		
+		// Allow the columns to space out over the full size of the table.
+		clientTable.setColumnResizePolicy(
+                TableView.CONSTRAINED_RESIZE_POLICY);
+		
+		
+		
+		
+	}
+	
+	// TODO: Change to append new client to list, and remove any clients that has disconnected(seperate method?)
+	private void updateClientTable(List<TestClient> clients) {
+		// Creates an observable list from the received clients list.
+        ObservableList<TestClient> obList 
+                = FXCollections.observableArrayList(clients);
+        // Places this list in the client table view.
+        clientTable.setItems(obList);
+        
+        
+	}
+	
+	public class TestClient {
+		private StringProperty ip;
+		private IntegerProperty port;
+		private BooleanProperty selected;
+		
+		public TestClient(String ip, int port) {
+			this.ip = new SimpleStringProperty(ip);
+			this.port = new SimpleIntegerProperty(port);
+			this.selected = new SimpleBooleanProperty(true);
+		}
+		
+		public void setSelected(boolean selected) {
+			this.selected.set(selected);
+		}
+		
+		public boolean getSelected() {
+			return selected.get();
+		}
+		
+		public String getIp() {
+			return ip.get();
+		}
+		
+		public int getPort() {
+			return port.get();
+		}
+		
+		public StringProperty ipProperty() {
+			return ip;
+		}
+		
+		public IntegerProperty portProperty() {
+			return port;
+		}
+		
+		public BooleanProperty selectedProperty() {
+			return selected;
+		}
+		
 		
 	}
 }
+
