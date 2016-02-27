@@ -25,14 +25,14 @@ public class ServerThread extends Thread {
 			System.out.println("After outputline");
 			while (true) {
 				sleep(3000);
-				if(counter %2 == 0){
+				if (counter % 2 == 0) {
 					inputLine = "green";
 					counter++;
-				}else{
-					inputLine ="red";
+				} else {
+					inputLine = "red";
 					counter++;
 				}
-				
+
 				outputLine = kkp.processInput(inputLine);
 				out.println(outputLine);
 
