@@ -2,21 +2,14 @@ package org.hioa.itpe;
 
 import javafx.event.EventHandler;
 
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableNumberValue;
-import javafx.beans.value.ObservableValue;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -54,8 +47,6 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-
-
 /**
  * Sample application that shows examples of the different layout panes provided
  * by the JavaFX layout API. The resulting UI is for demonstration purposes only
@@ -63,16 +54,22 @@ import javafx.stage.Stage;
  */
 
 public class App extends Application {
-	
-	private TableView clientTable;
+
+	private static TableView clientTable;
 	private TableColumn chkboxColumn;
 	private TableColumn ipColumn;
 	private TableColumn portColumn;
 	private TableColumn idColumn;
 	private TableColumn intersectColumn;
 	private TableColumn statusColumn;
-	
-	
+
+	private static Logger logger = LoggerFactory.getLogger(App.class);
+
+	public static int clientCounter = 0;
+	public static int serverCounter = 0;
+	private boolean serverStarted = false;
+	public static List<Client> clientList;
+
 	/**
 	 * @param args
 	 *            the command line arguments
@@ -80,10 +77,6 @@ public class App extends Application {
 	public static void main(String[] args) {
 		launch(App.class, args);
 	}
-
-	public static int clientCounter = 0;
-	public static int serverCounter = 0;
-	private boolean serverStarted=false;
 
 	@Override
 	public void start(Stage stage) {
@@ -93,38 +86,20 @@ public class App extends Application {
 
 		HBox hbox = addHBox();
 		border.setTop(hbox);
-		//border.setLeft(addVBox());
-		
+
 		///////////////////////
-		TestClient testClient1 = new TestClient("127.0.0.1", 8080);
-		TestClient testClient2 = new TestClient("127.0.0.1", 8080);
-		List<TestClient> clientList = new ArrayList<TestClient>();
-		clientList.add(testClient1);
-		clientList.add(testClient2);
-		
-		
+
+		clientList = new ArrayList<Client>();
+
 		border.setLeft(addClientPane());
-		updateClientTable(clientList);
-		
+		updateClientTable();
 
 		// Add a stack to the HBox in the top region
 		addStackPane(hbox);
 
-		// Choose either a TilePane or FlowPane for right region and comment out
-		// the
-		// one you aren't using
-		// border.setRight(addFlowPane());
-		//border.setRight(addTilePane());
-
-		// To see only the grid in the center, comment out the following
-		// statement
-		// If both setCenter() calls are executed, the anchor pane from the
-		// second
-		// call replaces the grid from the first call
-
 		GridPane centerGrid = new GridPane();
 		centerGrid.setMinSize(768, 1024);
-		//border.setCenter(centerGrid);
+		// border.setCenter(centerGrid);
 		border.setRight(addGridPane());
 
 		Scene scene = new Scene(border);
@@ -136,7 +111,6 @@ public class App extends Application {
 	/*
 	 * Creates an HBox with two buttons for the top region
 	 */
-
 	private HBox addHBox() {
 
 		HBox hbox = new HBox();
@@ -146,60 +120,32 @@ public class App extends Application {
 
 		Button btnCreate = new Button("Create Client");
 		btnCreate.setPrefSize(100, 20);
-		
+
 		btnCreate.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				System.out.println("Creating new client: " + clientCounter++);
-				new ClientGUI();
+				logger.info("Creating new client: " + clientCounter);
+				ClientGUI gui = new ClientGUI();
+				clientList.add(gui.getClient());
+				updateClientTable();
 			}
-			
+
 		});
-		
+
 		final Button btnStart = new Button("Start Server");
 		btnStart.setPrefSize(100, 20);
 
-		
-		
 		btnStart.setOnAction(new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent event){
-				System.out.println("Clicking button to start server.");
-				
-					//ServerSocket serverSocket = new ServerSocket(8080);
-					new Thread(new Server()).start();
-					btnStart.setDisable(true);
-			
-				
+			public void handle(ActionEvent event) {
+				logger.info("Starting server..");
+				new Thread(new Server()).start();
+				btnStart.setDisable(true);
+
 			}
 		});
 
 		hbox.getChildren().addAll(btnCreate, btnStart);
 
 		return hbox;
-	}
-
-	/*
-	 * Creates a VBox with a list of links for the left region
-	 */
-	private VBox addVBox() {
-
-		VBox vbox = new VBox();
-		vbox.setPadding(new Insets(10)); // Set all sides to 10
-		vbox.setSpacing(8); // Gap between nodes
-
-		Text title = new Text("Meny");
-		title.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-		vbox.getChildren().add(title);
-
-		Hyperlink options[] = new Hyperlink[] { new Hyperlink("Set red"), new Hyperlink("Set yellow"),
-				new Hyperlink("Set green"), new Hyperlink("Set cycle") };
-
-		for (int i = 0; i < 4; i++) {
-			// Add offset to left side to indent from title
-			VBox.setMargin(options[i], new Insets(0, 0, 0, 8));
-			vbox.getChildren().add(options[i]);
-		}
-
-		return vbox;
 	}
 
 	/*
@@ -261,207 +207,153 @@ public class App extends Application {
 
 		return tile;
 	}
-	
+
 	private GridPane addClientPane() {
 		GridPane clientPane = new GridPane();
-		
+
 		Label clientsLabel = new Label("Clients");
 		Label clientsDescription = new Label("Select clients to control");
-		
+
 		buildClientTable();
-		
+
 		clientPane.add(clientsLabel, 0, 0);
 		clientPane.add(clientsDescription, 0, 1);
 		clientPane.add(clientTable, 0, 2);
-		
+
 		return clientPane;
 	}
-	
+
 	private void buildClientTable() {
 		clientTable = new TableView<>();
 		clientTable.setEditable(false);
 		clientTable.setPrefSize(600, 400); // width, height
-		
+
 		// Initialize columns with titles
-		chkboxColumn = new TableColumn<TestClient, Boolean>("Select");
-		ipColumn = new TableColumn<TestClient, String>("IP-address");
-		portColumn = new TableColumn<TestClient, Integer>("Port");
-		idColumn = new TableColumn<TestClient, String>("ID");
-		intersectColumn = new TableColumn<TestClient, String>("Intersection");
-		statusColumn = new TableColumn<TestClient, String>("Status");
-		
+		chkboxColumn = new TableColumn<Client, Boolean>("Select");
+		ipColumn = new TableColumn<Client, String>("IP-address");
+		portColumn = new TableColumn<Client, Integer>("Port");
+		idColumn = new TableColumn<Client, String>("ID");
+		intersectColumn = new TableColumn<Client, String>("Intersection");
+		statusColumn = new TableColumn<Client, String>("Status");
+
 		// Add Columns to the table
-		clientTable.getColumns().addAll(chkboxColumn, ipColumn, 
-				portColumn, idColumn, intersectColumn, statusColumn);
-		
-		ipColumn.setCellValueFactory(new PropertyValueFactory<TestClient, String>("ip"));
-		portColumn.setCellValueFactory(new PropertyValueFactory<TestClient, Integer>("port"));
-		chkboxColumn.setCellValueFactory(new PropertyValueFactory<TestClient, Boolean>("selected"));
+		clientTable.getColumns().addAll(chkboxColumn, ipColumn, portColumn, idColumn, intersectColumn, statusColumn);
+
+		ipColumn.setCellValueFactory(new PropertyValueFactory<Client, String>("ip"));
+		portColumn.setCellValueFactory(new PropertyValueFactory<Client, Integer>("port"));
+		chkboxColumn.setCellValueFactory(new PropertyValueFactory<Client, Boolean>("selected"));
+		idColumn.setCellValueFactory(new PropertyValueFactory<Client, Integer>("id"));
 		chkboxColumn.setCellFactory(CheckBoxTableCell.forTableColumn(chkboxColumn));
 		chkboxColumn.setEditable(true);
 		clientTable.setEditable(true);
-		
-		
+
 		// Allow the columns to space out over the full size of the table.
-		clientTable.setColumnResizePolicy(
-                TableView.CONSTRAINED_RESIZE_POLICY);
-		
-		
-		
-		
+		clientTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
 	}
-	
-	// TODO: Change to append new client to list, and remove any clients that has disconnected(seperate method?)
-	private void updateClientTable(List<TestClient> clients) {
+
+	// TODO: Change to append new client to list, and remove any clients that
+	// has disconnected(seperate method?)
+	public static void updateClientTable() {
 		// Creates an observable list from the received clients list.
-        ObservableList<TestClient> obList 
-                = FXCollections.observableArrayList(clients);
-        // Places this list in the client table view.
-        clientTable.setItems(obList);
-        
-        
+		ObservableList<Client> obList = FXCollections.observableArrayList(App.clientList);
+		// Places this list in the client table view.
+		clientTable.setItems(obList);
+
 	}
-	
-	public class TestClient {
-		private StringProperty ip;
-		private IntegerProperty port;
-		private BooleanProperty selected;
-		
-		public TestClient(String ip, int port) {
-			this.ip = new SimpleStringProperty(ip);
-			this.port = new SimpleIntegerProperty(port);
-			this.selected = new SimpleBooleanProperty(true);
-		}
-		
-		public void setSelected(boolean selected) {
-			this.selected.set(selected);
-		}
-		
-		public boolean getSelected() {
-			return selected.get();
-		}
-		
-		public String getIp() {
-			return ip.get();
-		}
-		
-		public int getPort() {
-			return port.get();
-		}
-		
-		public StringProperty ipProperty() {
-			return ip;
-		}
-		
-		public IntegerProperty portProperty() {
-			return port;
-		}
-		
-		public BooleanProperty selectedProperty() {
-			return selected;
-		}
-		
-		
-	}
-	
+
 	private GridPane addGridPane() {
 
 		GridPane grid = new GridPane();
 		grid.setHgap(10);
 		grid.setVgap(12);
 
+		// Padding arround entire grid to create space
+		grid.setPadding(new Insets(0, 10, 10, 10));
+
 		Label ctrlLabel = new Label("Control Panel");
 		Label autLabel = new Label("Automatic Cycle");
 		Label staLabel = new Label("Status");
 		Label intLabel = new Label("Interval");
-		final int MIN =1;
-		final int MAX =60;
-		final int INITIAL =30;
-		final int STEP =1;
-		
-		
-		Label greenLabel = new Label("Green");
-		final Spinner greenSpinner = new Spinner();
-	    greenSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX,INITIAL,STEP));
-	    greenSpinner.setEditable(false);
+		final int MIN = 1;
+		final int MAX = 60;
+		final int INITIAL = 30;
+		final int STEP = 1;
 
-		
+		Label greenLabel = new Label("Green");
+		final Spinner<Integer> greenSpinner = new Spinner<Integer>();
+		greenSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL, STEP));
+		greenSpinner.setEditable(false);
 
 		Label yellowLabel = new Label("Yellow");
-		final Spinner yellowSpinner = new Spinner();
-	    yellowSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX,INITIAL,STEP));
-	    yellowSpinner.setEditable(false);
-
+		final Spinner<Integer> yellowSpinner = new Spinner<Integer>();
+		yellowSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL, STEP));
+		yellowSpinner.setEditable(false);
 
 		Label redLabel = new Label("Red");
-		final Spinner redSpinner = new Spinner();
-	    redSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX,INITIAL,STEP));
-	    redSpinner.setEditable(false);
-	    
+		final Spinner<Integer> redSpinner = new Spinner<Integer>();
+		redSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL, STEP));
+		redSpinner.setEditable(false);
+
 		Button startCycleBtn = new Button("Start Cycle");
 
 		// Manual options starts here.
 		Label manLabel = new Label("Manual");
 		Label manStatusLabel = new Label("Status");
 		Label manIntervalLabel = new Label("Interval");
-		
+
 		Label manGreenLabel = new Label("Green");
 		Button greenManBtn = new Button("Set");
-		
+
 		Label manYellowLabel = new Label("Yellow");
 		Button yellowManBtn = new Button("Set");
-		
+
 		Label manRedLabel = new Label("Red");
 		Button redManBtn = new Button("Set");
-		
+
 		Label manBlinkYellowLabel = new Label("Blinking");
 		Button blinkManBtn = new Button("Set");
-		
+
 		Label manOffLabel = new Label("Off");
 		Button offManBtn = new Button("Set");
-		
-		
+
 		grid.add(ctrlLabel, 0, 0, 2, 1);
 		grid.add(autLabel, 0, 1, 2, 1);
-		
+
 		grid.add(staLabel, 0, 2, 1, 1);
 		grid.add(intLabel, 1, 2, 1, 1);
-		
+
 		grid.add(greenLabel, 0, 3, 1, 1);
 		grid.add(greenSpinner, 1, 3, 1, 1);
-		
-		grid.add(yellowLabel, 0,4, 1, 1);
+
+		grid.add(yellowLabel, 0, 4, 1, 1);
 		grid.add(yellowSpinner, 1, 4, 1, 1);
-		
-		
+
 		grid.add(redLabel, 0, 5, 1, 1);
 		grid.add(redSpinner, 1, 5, 1, 1);
-		
+
 		grid.add(startCycleBtn, 0, 6, 2, 1);
-		
-		//manual is starting here
+
+		// manual is starting here
 		grid.add(manLabel, 0, 7, 2, 1);
-		
+
 		grid.add(manStatusLabel, 0, 8, 1, 1);
-		
+
 		grid.add(manGreenLabel, 0, 9, 1, 1);
 		grid.add(greenManBtn, 1, 9, 1, 1);
-		
+
 		grid.add(manYellowLabel, 0, 10, 1, 1);
 		grid.add(yellowManBtn, 1, 10, 1, 1);
-		
+
 		grid.add(manRedLabel, 0, 11, 1, 1);
 		grid.add(redManBtn, 1, 11, 1, 1);
-		
+
 		grid.add(manBlinkYellowLabel, 0, 12, 1, 1);
 		grid.add(blinkManBtn, 1, 13, 1, 1);
-		
+
 		grid.add(manOffLabel, 0, 14, 1, 1);
 		grid.add(offManBtn, 1, 14, 1, 1);
-		
-
 
 		return grid;
 	}
 }
-

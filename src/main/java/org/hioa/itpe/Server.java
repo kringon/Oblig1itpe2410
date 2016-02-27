@@ -6,7 +6,8 @@ import java.net.ServerSocket;
 import javafx.concurrent.Task;
 
 public class Server extends Task {
-	private int portNumber = 8080;
+	public static int portNumber = 8080;
+	public static String hostName="127.0.0.1";
 
 	@Override
 	protected Object call() throws Exception {
