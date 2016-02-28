@@ -9,9 +9,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -29,6 +30,8 @@ public class Client extends Task {
 	private BooleanProperty selected;
 	private IntegerProperty id;
 	private StringProperty statusMessage;
+	
+	private static Logger logger = LoggerFactory.getLogger(Client.class);
 
 	private int status;
 	private boolean cycle;
@@ -70,7 +73,9 @@ public class Client extends Task {
 			int redCounter = 0;
 			// Keep reading server output
 			while ((fromServer = in.readLine()) != null) {
-				System.out.println("Server: " + fromServer);
+				logger.info("FromServer: " + fromServer);
+				logger.info("In.readline: " + in.readLine());
+				
 				
 				updateFromServerJSON(fromServer);
 				// Run cycle status if cycle is set to true:
@@ -140,10 +145,14 @@ public class Client extends Task {
 	}
 
 	public void updateFromServerJSON(String fromServer) {
+		
+		
+		ObjectMapper mapper = new ObjectMapper();
+		Message message = mapper.readValue(fromServer,Message.class);
+		
 		try {
-			JSONObject jsonObj = new JSONObject(fromServer);
-			JSONArray idList = jsonObj.getJSONArray("idList");
-			for (int i = 0; i < idList.length(); i++) {
+			
+			for (Integer i : message.getIdList()) {
 				if (this.getId() == idList.getInt(i)) {
 					this.setSelected(true);
 				}
