@@ -32,16 +32,52 @@ package org.hioa.itpe;
  */ 
 
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.*;
 
+
 public class Protocol {
-    private static final int NONE = 0;
-    private static final int GREEN = 1;
-    private static final int YELLOW = 2;
-    private static final int RED = 3;
+    public static final int NONE = 0;
+    public static final int GREEN = 1;
+    public static final int YELLOW = 2;
+    public static final int RED = 3;
+    public static final int RED_YELLOW = 4;
+    public static final int FLASHING = 5;
+    public static final int CYCLE = 6;
+    
+    
+    private int state;
+    private int[] interval = {0, 0, 0};
+    //private int intersection;
+    
+    private List idList;
+    
+    public Protocol() {
+    	state = NONE;
+    	idList = new ArrayList<Integer>();
+    }
+    
+    // returns a JSON String
+    public String output() {
+    	JSONObject jsonObj = new JSONObject();
+    	try {
+    		jsonObj.put("idList", idList);
+			jsonObj.put("state", state);
+			jsonObj.put("interval", interval);
 
-
-    private int state = GREEN;
+			return jsonObj.toString();
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+    	
+    	return "";
+    }
 
 
     public String processInput(String theInput) {
@@ -56,5 +92,19 @@ public class Protocol {
         	 theOutput = "graphics/none.png";
         }
         return theOutput;
+    }
+    
+    public void setState(int state) {
+    	this.state = state;
+    }
+    
+    public void setInterval(int green, int yellow, int red) {
+    	interval[0] = green;
+    	interval[1] = yellow;
+    	interval[2] = red;
+    }
+    
+    public void setIdList(List idList) {
+    	this.idList = idList;
     }
 }
