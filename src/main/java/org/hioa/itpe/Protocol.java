@@ -65,7 +65,7 @@ public class Protocol {
     private ArrayList<Integer> idList;
     
     public Protocol() {
-    	status = NONE;
+    	status = CYCLE;
     	idList = new ArrayList<Integer>();
     }
     

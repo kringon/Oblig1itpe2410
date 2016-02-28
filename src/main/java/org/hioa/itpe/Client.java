@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.javafx.scene.control.skin.TableViewSkinBase;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -66,68 +67,93 @@ public class Client extends Task {
 
 			String fromServer;
 
-			// Counters for the cycle:
-			int greenCounter = 0;
-			int yellowCounter = 0;
-			int redCounter = 0;
+
 			// Keep reading server output
 			while ((fromServer = in.readLine()) != null) {
 				logger.info("FromServer: " + fromServer);
-				//logger.info("In.readline: " + in.readLine());
+				// logger.info("In.readline: " + in.readLine());
 
 				updateFromServerJSON(fromServer);
-				// Run cycle status if cycle is set to true:
-				while (cycle) {
-					// Switch to RED when starting the cycle.(starts at CYCLE)
-					if (this.status == Protocol.CYCLE) {
-						this.status = Protocol.RED;
-					} // Switch to YELLOW (if previously red or green)
-					else if (this.status == Protocol.RED || this.status == Protocol.GREEN) {
-						// If previously red switch to red and yellow.
-						if (this.status == Protocol.RED) {
-							this.status = Protocol.RED_YELLOW;
-							redCounter = 0; // reset red counter.
-						} // if previously green switch to normal yellow
-						else if (this.status == Protocol.GREEN) {
-							this.status = Protocol.YELLOW;
-							greenCounter = 0; // reset green counter.
-						}
-						updateImage(); // update displayed image
-						while (yellowCounter < yellowInterval) {
-							updateStatusMessage(yellowInterval - yellowCounter); // update
-																					// the
-																					// status
-																					// message.
-							Thread.sleep(1000); // 1 second
-							yellowCounter++; // update counter by 1 (1
-												// second has passed)
-						}
-					} // Switch to GREEN (if previously red and yellow)
-					else if (this.status == Protocol.RED_YELLOW) {
-						this.status = Protocol.GREEN;
-						updateImage(); // update displayed image
-						yellowCounter = 0; // reset yellow counter.
-						while (greenCounter < greenInterval) {
-							updateStatusMessage(greenInterval - greenCounter);
-							Thread.sleep(1000); // 1 second
-							greenCounter++; // update counter by 1 (1 second
-											// has passed)
-						}
-					} // Switch to RED (if previously normal yellow)
-					else if (this.status == Protocol.YELLOW) {
-						this.status = Protocol.RED;
-						updateImage(); // update displayed image
-						yellowCounter = 0; // reset yellow counter.
-						while (redCounter < redInterval) {
-							updateStatusMessage(redInterval - redCounter);
-							Thread.sleep(1000); // 1 second
-							redCounter++; // update counter by 1 (1 second
-											// has passed)
-						}
-					}
+				Thread cycleThread = new Thread() {
+					public void run() {
+						// Counters for the cycle:
+						int greenCounter = 0;
+						int yellowCounter = 0;
+						int redCounter = 0;
 
-				} // end of while (cycle)
-					// TODO:
+						// Run cycle status if cycle is set to true:
+						while (cycle) {
+							// Switch to RED when starting the cycle.(starts at
+							// CYCLE)
+							if (status == Protocol.CYCLE) {
+								status = Protocol.RED;
+							} // Switch to YELLOW (if previously red or green)
+							else if (status == Protocol.RED || status == Protocol.GREEN) {
+								// If previously red switch to red and yellow.
+								if (status == Protocol.RED) {
+									status = Protocol.RED_YELLOW;
+									redCounter = 0; // reset red counter.
+								} // if previously green switch to normal yellow
+								else if (status == Protocol.GREEN) {
+									status = Protocol.YELLOW;
+									greenCounter = 0; // reset green counter.
+								}
+								updateImage(); // update displayed image
+								while (yellowCounter < yellowInterval) {
+									updateStatusMessage(yellowInterval - yellowCounter); // update
+																							// the
+																							// status
+																							// message.
+									try {
+										sleep(1000);
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} // 1 second
+									yellowCounter++; // update counter by 1 (1
+														// second has passed)
+								}
+							} // Switch to GREEN (if previously red and yellow)
+							else if (status == Protocol.RED_YELLOW) {
+								status = Protocol.GREEN;
+								updateImage(); // update displayed image
+								yellowCounter = 0; // reset yellow counter.
+								while (greenCounter < greenInterval) {
+									updateStatusMessage(greenInterval - greenCounter);
+									try {
+										sleep(1000);
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} // 1 second
+									greenCounter++; // update counter by 1 (1
+													// second
+													// has passed)
+								}
+							} // Switch to RED (if previously normal yellow)
+							else if (status == Protocol.YELLOW) {
+								status = Protocol.RED;
+								updateImage(); // update displayed image
+								yellowCounter = 0; // reset yellow counter.
+								while (redCounter < redInterval) {
+									updateStatusMessage(redInterval - redCounter);
+									try {
+										sleep(1000);
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} // 1 second
+									redCounter++; // update counter by 1 (1
+													// second
+													// has passed)
+								}
+							}
+
+						} // end of while (cycle)
+					}
+				};
+				cycleThread.start();
+				// TODO:
 				while (status == Protocol.FLASHING) {
 
 				}
