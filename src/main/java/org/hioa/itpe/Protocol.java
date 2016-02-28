@@ -35,8 +35,6 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +65,7 @@ public class Protocol {
     private ArrayList<Integer> idList;
     
     public Protocol() {
-    	status = CYCLE;
+    	status = NONE;
     	idList = new ArrayList<Integer>();
     }
     
