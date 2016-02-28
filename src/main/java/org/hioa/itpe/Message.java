@@ -1,10 +1,9 @@
 package org.hioa.itpe;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Message {
-	private ArrayList<Integer> idList;
+	private List<Integer> idList;
 	//private String status;
 	private int status;
 	private int greenInterval;
@@ -16,7 +15,7 @@ public class Message {
 		
 	}
 
-	public Message(ArrayList<Integer> idList, int status, int greenInterval, int yellowInterval, int redInterval){
+	public Message(List<Integer> idList, int status, int greenInterval, int yellowInterval, int redInterval){
 		this.idList = idList;
 		this.status = status;
 		this.greenInterval = greenInterval;
@@ -55,7 +54,7 @@ public class Message {
 	}
 
 
-	public void setIdList(ArrayList<Integer> idList) {
+	public void setIdList(List<Integer> idList) {
 		this.idList = idList;
 	}
 

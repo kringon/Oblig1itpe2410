@@ -8,8 +8,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.javafx.scene.control.skin.TableViewSkinBase;
-
 import javafx.application.Application;
 
 import javafx.collections.FXCollections;
@@ -57,20 +55,20 @@ import javafx.stage.Stage;
 
 public class App extends Application {
 
-	private static TableView<Client> clientTable;
-	private TableColumn<Client, Boolean> chkboxColumn;
-	private TableColumn<Client, String> ipColumn;
-	private TableColumn<Client, Integer> portColumn;
-	private TableColumn<Client, Integer> idColumn;
-	private TableColumn<Client, String> intersectColumn;
-	private TableColumn<Client, String> statusColumn;
+	private static TableView clientTable;
+	private TableColumn chkboxColumn;
+	private TableColumn ipColumn;
+	private TableColumn portColumn;
+	private TableColumn idColumn;
+	private TableColumn intersectColumn;
+	private TableColumn statusColumn;
 
 	private static Logger logger = LoggerFactory.getLogger(App.class);
-
+	private Server server;
 	public static int clientCounter = 0;
 	public static int serverCounter = 0;
-	private boolean serverStarted = false;
-	public static List<Client> clientList;
+	public static ObservableList<Client> clientList;
+	public static int lastAction;
 
 	/**
 	 * @param args
@@ -91,7 +89,7 @@ public class App extends Application {
 
 		///////////////////////
 
-		clientList = new ArrayList<>();
+		clientList = FXCollections.observableArrayList();
 
 		border.setLeft(addClientPane());
 		updateClientTable();
@@ -109,21 +107,6 @@ public class App extends Application {
 		scene.getStylesheets().add("CSS/AppStyle.css");
 		stage.setTitle("Traffic light control ");
 		stage.show();
-
-		Thread thread = new Thread() {
-			public void run() {
-				while (true) {
-					try {
-						sleep(100);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					clientTable.getProperties().put(TableViewSkinBase.RECREATE, Boolean.TRUE);
-				}
-			}
-		};
-		thread.start();
 
 	}
 
@@ -157,7 +140,9 @@ public class App extends Application {
 		btnStart.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
 				logger.info("Starting server..");
-				new Thread(new Server()).start();
+
+				server = new Server();
+				new Thread(server).start();
 				btnStart.setDisable(true);
 
 			}
@@ -245,7 +230,7 @@ public class App extends Application {
 	}
 
 	private void buildClientTable() {
-		clientTable = new TableView<Client>();
+		clientTable = new TableView<>();
 		clientTable.setEditable(false);
 		clientTable.setPrefSize(600, 400); // width, height
 
@@ -253,7 +238,7 @@ public class App extends Application {
 		chkboxColumn = new TableColumn<Client, Boolean>("Select");
 		ipColumn = new TableColumn<Client, String>("IP-address");
 		portColumn = new TableColumn<Client, Integer>("Port");
-		idColumn = new TableColumn<Client, Integer>("ID");
+		idColumn = new TableColumn<Client, String>("ID");
 		intersectColumn = new TableColumn<Client, String>("Intersection");
 		statusColumn = new TableColumn<Client, String>("Status");
 
@@ -277,9 +262,7 @@ public class App extends Application {
 	// TODO: Change to append new client to list, and remove any clients that
 	// has disconnected(seperate method?)
 	public static void updateClientTable() {
-		ObservableList<Client> obList = FXCollections.observableArrayList(clientList);
-		clientTable.setItems(obList);
-		clientTable.getProperties().put(TableViewSkinBase.RECREATE, Boolean.TRUE);
+		clientTable.setItems(clientList);
 
 	}
 
@@ -289,7 +272,7 @@ public class App extends Application {
 		grid.setHgap(10);
 		grid.setVgap(12);
 
-		// Padding around entire grid to create space
+		// Padding arround entire grid to create space
 		grid.setPadding(new Insets(0, 10, 10, 10));
 
 		Label ctrlLabel = new Label("Control Panel");
@@ -339,11 +322,26 @@ public class App extends Application {
 		Button greenManBtn = new Button("Set");
 		greenManBtn.getStyleClass().add("button-set");
 		greenManBtn.setMaxWidth(Double.MAX_VALUE);
+		// Add action when pressing the "set green" button
+		greenManBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				logger.info("Setting all selected clients green");
+				lastAction = Protocol.GREEN;
+
+			}
+
+		});
 
 		Label manYellowLabel = new Label("Yellow");
 		Button yellowManBtn = new Button("Set");
 		yellowManBtn.getStyleClass().add("button-set");
 		yellowManBtn.setMaxWidth(Double.MAX_VALUE);
+		yellowManBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				logger.info("Setting all selected clients yellow");
+				lastAction = Protocol.YELLOW;
+			}
+		});
 
 		Label manRedLabel = new Label("Red");
 		Button redManBtn = new Button("Set");
@@ -399,5 +397,17 @@ public class App extends Application {
 		grid.add(offManBtn, 1, 13, 1, 1);
 
 		return grid;
+	}
+
+	public static List<Integer> getSelectedClientIds() {
+		List<Integer> clientIds = new ArrayList<Integer>();
+		for (Client client : clientList) {
+
+			if (client.isSelected()) {
+				clientIds.add(client.getId());
+			}
+		}
+		return clientIds;
+
 	}
 }

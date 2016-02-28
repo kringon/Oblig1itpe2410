@@ -1,51 +1,45 @@
 package org.hioa.itpe;
 
 import java.net.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
 public class ServerThread extends Thread {
 	private Socket socket = null;
-	private int counter=0;
+	private static Logger logger = LoggerFactory.getLogger(ServerThread.class);
+	private int lastPrintedAction;
 
 	public ServerThread(Socket socket) {
 
 		super("ServerThread");
 		this.socket = socket;
-
+		lastPrintedAction = -1;
 	}
 
 	public void run() {
 
-		try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));) {
-			String inputLine, outputLine;
-			Protocol kkp = new Protocol();
-			outputLine = kkp.output();
-			out.println(outputLine);
-			/*
-			System.out.println("After outputline");
-			while (true) {
-				sleep(3000);
-				if (counter % 2 == 0) {
-					inputLine = "green";
-					counter++;
-				} else {
-					inputLine = "red";
-					counter++;
+		while (true) {
+			try {
+				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+				if (lastPrintedAction != App.lastAction) {
+					String message = Protocol.produceMessage(App.lastAction, App.getSelectedClientIds());
+
+					if (!message.isEmpty()){
+						out.println(message);
+						lastPrintedAction = App.lastAction;
+					}
+						
 				}
 
-				//outputLine = kkp.processInput(inputLine);
-				out.println(outputLine);
-
-				if (inputLine == "stop") {
-					break;
-				}
-
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
-			*/
-			socket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+
 	}
+
 }

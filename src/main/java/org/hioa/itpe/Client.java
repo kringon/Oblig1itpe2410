@@ -274,15 +274,3 @@ public class Client extends Task {
 
 }
 
-/*
- * public void statusToString(int status) { switch (status) { case
- * Protocol.NONE: this.statusMessage = new SimpleStringProperty("None"); break;
- * case Protocol.GREEN: this.statusMessage = new SimpleStringProperty("Green");
- * break; case Protocol.YELLOW: this.statusMessage = new
- * SimpleStringProperty("Yellow"); break; case Protocol.RED: this.statusMessage
- * = new SimpleStringProperty("Red"); break; case Protocol.RED_YELLOW:
- * this.statusMessage = new SimpleStringProperty("Red/Yellow"); break; case
- * Protocol.FLASHING: this.statusMessage = new SimpleStringProperty("Flashing");
- * break; case Protocol.CYCLE: this.statusMessage = new
- * SimpleStringProperty("Cycle"); break; default: break; } }
- */
