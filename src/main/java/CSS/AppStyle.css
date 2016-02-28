@@ -1,0 +1,70 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 28.feb.2016, 06:03:07
+    Author     : Tess
+*/
+
+.root {
+    -fx-font: 11px "Myriad";
+    -fx-font-weight: bold;	 
+    
+    -fx-background-color: #FFFFFF ;
+}
+
+// applies to all labels
+.label{
+    -fx-text-fill:#484848    ;
+}
+// applies to control headline
+.label-control{
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;	 
+    -fx-content-display:center
+}
+  //applies to interval and status labels
+.label-interval{
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    
+}
+
+//applies to labels cycle and manual
+.label-control-type{
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+// All the buttons in the controlpanel
+.button-set{
+    -fx-background-color: #C8C8C8 ;
+    -fx-border-color: #C0C0C0;
+    -fx-border-radius: 5;
+}
+
+.button-set:hover, button-set:focused{
+    -fx-effect: dropshadow(three-pass-box, #A0A0A0, 3, 0, 0, 0);
+    -fx-border-color: #808080;
+}
+
+.hbox{
+    -fx-background-color: #660066;
+}
+
+// start server and start new client
+.button-start{
+    -fx-background-color: #660066;
+    -fx-border-color:#808080 ;
+    -fx-text-fill: #E0E0E0;
+    -fx-border-radius: 3;
+}
+
+.button-start:hover, button-start:focused {
+    -fx-effect: dropshadow(three-pass-box, #E0E0E0, 3, 0, 0, 0);
+    -fx-border-color: #E0E0E0;
+}
+
+
