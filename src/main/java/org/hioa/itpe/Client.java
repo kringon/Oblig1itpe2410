@@ -9,9 +9,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -30,12 +31,13 @@ public class Client extends Task {
 	private IntegerProperty id;
 	private StringProperty statusMessage;
 
+	private static Logger logger = LoggerFactory.getLogger(Client.class);
+
 	private int status;
 	private boolean cycle;
 	private int greenInterval;
 	private int yellowInterval;
 	private int redInterval;
-	
 
 	private ImageView displayedImage;
 
@@ -53,7 +55,7 @@ public class Client extends Task {
 		this.greenInterval = 0;
 		this.yellowInterval = 0;
 		this.redInterval = 0;
-		
+
 	}
 
 	@Override
@@ -63,15 +65,16 @@ public class Client extends Task {
 				BufferedReader in = new BufferedReader(new InputStreamReader(kkSocket.getInputStream()));) {
 
 			String fromServer;
-			
+
 			// Counters for the cycle:
 			int greenCounter = 0;
 			int yellowCounter = 0;
 			int redCounter = 0;
 			// Keep reading server output
 			while ((fromServer = in.readLine()) != null) {
-				System.out.println("Server: " + fromServer);
-				
+				logger.info("FromServer: " + fromServer);
+				logger.info("In.readline: " + in.readLine());
+
 				updateFromServerJSON(fromServer);
 				// Run cycle status if cycle is set to true:
 				while (cycle) {
@@ -91,7 +94,10 @@ public class Client extends Task {
 						}
 						updateImage(); // update displayed image
 						while (yellowCounter < yellowInterval) {
-							updateStatusMessage(yellowInterval - yellowCounter); // update the status message.
+							updateStatusMessage(yellowInterval - yellowCounter); // update
+																					// the
+																					// status
+																					// message.
 							Thread.sleep(1000); // 1 second
 							yellowCounter++; // update counter by 1 (1
 												// second has passed)
@@ -121,12 +127,12 @@ public class Client extends Task {
 					}
 
 				} // end of while (cycle)
-				//TODO:
+					// TODO:
 				while (status == Protocol.FLASHING) {
-					
+
 				}
 
-			} 
+			}
 		} catch (
 
 		UnknownHostException e) {
@@ -140,32 +146,34 @@ public class Client extends Task {
 	}
 
 	public void updateFromServerJSON(String fromServer) {
+
+		ObjectMapper mapper = new ObjectMapper();
+		Message message;
 		try {
-			JSONObject jsonObj = new JSONObject(fromServer);
-			JSONArray idList = jsonObj.getJSONArray("idList");
-			for (int i = 0; i < idList.length(); i++) {
-				if (this.getId() == idList.getInt(i)) {
+			message = mapper.readValue(fromServer, Message.class);
+
+			for (Integer id : message.getIdList()) {
+				if (this.getId() == id) {
 					this.setSelected(true);
 				}
 			}
 			if (this.isSelected()) {
-				int statusFromServer = jsonObj.getInt("status");
+				int statusFromServer = message.getStatus();
 				if (statusFromServer == Protocol.CYCLE) {
 					this.status = Protocol.CYCLE;
 					this.cycle = true;
-					this.greenInterval = jsonObj.getJSONArray("interval").getInt(0);
-					this.yellowInterval = jsonObj.getJSONArray("interval").getInt(0);
-					this.redInterval = jsonObj.getJSONArray("interval").getInt(0);
+					this.greenInterval = message.getGreenInterval();
+					this.yellowInterval = message.getYellowInterval();
+					this.redInterval = message.getRedInterval();
 				} else if (statusFromServer == Protocol.FLASHING) {
-					
-				}
-				else {
+
+				} else {
 					this.status = statusFromServer;
 					updateStatusMessage(0);
 					updateImage();
 				}
 			}
-		} catch (JSONException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -207,22 +215,22 @@ public class Client extends Task {
 			return "Standby";
 		}
 	}
-	
+
 	// Updates the displayed traffic light image
-    public void updateImage() {
-        if (status == Protocol.GREEN) {
-        	displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/green.png")));
-        } else if (status == Protocol.RED) {
-        	displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/red.png")));
-        } else if (status == Protocol.RED_YELLOW) {
-        	displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/red_yellow.png")));
-        } else if (status == Protocol.YELLOW) {
-        	displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/yellow.png")));
-        } else {
-        	displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/none.png")));
-        }
-    }
-	
+	public void updateImage() {
+		if (status == Protocol.GREEN) {
+			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/green.png")));
+		} else if (status == Protocol.RED) {
+			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/red.png")));
+		} else if (status == Protocol.RED_YELLOW) {
+			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/red_yellow.png")));
+		} else if (status == Protocol.YELLOW) {
+			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/yellow.png")));
+		} else {
+			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/none.png")));
+		}
+	}
+
 	public boolean isSelected() {
 		return selected.get();
 	}

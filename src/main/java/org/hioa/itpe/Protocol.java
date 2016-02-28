@@ -37,11 +37,15 @@ import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
 
 public class Protocol {
+	
+	private static Logger logger = LoggerFactory.getLogger(Protocol.class);
     public static final int NONE = 0;
     public static final int GREEN = 1;
     public static final int YELLOW = 2;
@@ -51,25 +55,29 @@ public class Protocol {
     public static final int CYCLE = 6;
     
     
-    private int state;
+    private int status;
+    //Green,yellow,red
     private int[] interval = {0, 0, 0};
     //private int intersection;
     
     private List idList;
     
     public Protocol() {
-    	state = NONE;
+    	status = NONE;
     	idList = new ArrayList<Integer>();
     }
     
     // returns a JSON String
     public String output() {
     	JSONObject jsonObj = new JSONObject();
+    	
+
     	try {
     		jsonObj.put("idList", idList);
-			jsonObj.put("state", state);
+			jsonObj.put("status", status);
 			jsonObj.put("interval", interval);
 
+			logger.info("JsonObj: " + jsonObj.);
 			return jsonObj.toString();
 			
 		} catch (JSONException e) {
@@ -94,8 +102,8 @@ public class Protocol {
         return theOutput;
     }
     
-    public void setState(int state) {
-    	this.state = state;
+    public void setStatus(int status) {
+    	this.status = status;
     }
     
     public void setInterval(int green, int yellow, int red) {
@@ -107,4 +115,7 @@ public class Protocol {
     public void setIdList(List idList) {
     	this.idList = idList;
     }
+    
+    
+    
 }
