@@ -67,8 +67,9 @@ public class App extends Application {
 	private Server server;
 	public static int clientCounter = 0;
 	public static int serverCounter = 0;
-	public static ObservableList<Client> clientList;
-	public static int lastAction;
+	//public static ObservableList<Client> clientList;
+	public static ObservableList<MockClient> mockClientList;
+	public static int lastAction = Protocol.NONE;
 
 	/**
 	 * @param args
@@ -89,10 +90,11 @@ public class App extends Application {
 
 		///////////////////////
 
-		clientList = FXCollections.observableArrayList();
+		//clientList = FXCollections.observableArrayList();
+		mockClientList = FXCollections.observableArrayList();
 
 		border.setLeft(addClientPane());
-		updateClientTable();
+		updateMockClientTable();
 
 		// Add a stack to the HBox in the top region
 		addStackPane(hbox);
@@ -104,7 +106,7 @@ public class App extends Application {
 
 		Scene scene = new Scene(border);
 		stage.setScene(scene);
-		scene.getStylesheets().add("CSS/AppStyle.css");
+		scene.getStylesheets().add("/CSS/AppStyle.css");
 		stage.setTitle("Traffic light control ");
 		stage.show();
 
@@ -120,15 +122,14 @@ public class App extends Application {
 		hbox.setSpacing(10); // Gap between nodes
 		hbox.getStyleClass().add("hbox");
 
-		Button btnCreate = new Button("Create Client");
+		final Button btnCreate = new Button("Create Client");
+		btnCreate.setDisable(true);
 		btnCreate.setPrefSize(100, 20);
 		btnCreate.getStyleClass().add("button-start");
 		btnCreate.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
 				logger.info("Creating new client: " + clientCounter);
 				ClientGUI gui = new ClientGUI();
-				clientList.add(gui.getClient());
-				updateClientTable();
 			}
 
 		});
@@ -144,6 +145,7 @@ public class App extends Application {
 				server = new Server();
 				new Thread(server).start();
 				btnStart.setDisable(true);
+				btnCreate.setDisable(false);
 
 			}
 		});
@@ -259,12 +261,7 @@ public class App extends Application {
 
 	}
 
-	// TODO: Change to append new client to list, and remove any clients that
-	// has disconnected(seperate method?)
-	public static void updateClientTable() {
-		clientTable.setItems(clientList);
-
-	}
+	
 
 	private GridPane addGridPane() {
 
@@ -325,9 +322,7 @@ public class App extends Application {
 		// Add action when pressing the "set green" button
 		greenManBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				logger.info("Setting all selected clients green");
-				lastAction = Protocol.GREEN;
-
+				handleStatusButtonClick(Protocol.GREEN);
 			}
 
 		});
@@ -338,8 +333,7 @@ public class App extends Application {
 		yellowManBtn.setMaxWidth(Double.MAX_VALUE);
 		yellowManBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				logger.info("Setting all selected clients yellow");
-				lastAction = Protocol.YELLOW;
+				handleStatusButtonClick(Protocol.YELLOW);
 			}
 		});
 
@@ -347,17 +341,32 @@ public class App extends Application {
 		Button redManBtn = new Button("Set");
 		redManBtn.getStyleClass().add("button-set");
 		redManBtn.setMaxWidth(Double.MAX_VALUE);
+		redManBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				handleStatusButtonClick(Protocol.RED);
+			}
+		});
 
-		Label manBlinkYellowLabel = new Label("Blinking");
-		Button blinkManBtn = new Button("Set");
-		blinkManBtn.getStyleClass().add("button-set");
-		blinkManBtn.setMaxWidth(Double.MAX_VALUE);
+		Label manBlinkYellowLabel = new Label("Flashing");
+		Button flashManBtn = new Button("Set");
+		flashManBtn.getStyleClass().add("button-set");
+		flashManBtn.setMaxWidth(Double.MAX_VALUE);
+		flashManBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				handleStatusButtonClick(Protocol.FLASHING);
+			}
+		});
 
 		Label manOffLabel = new Label("Off");
 
 		Button offManBtn = new Button("Set");
 		offManBtn.getStyleClass().add("button-set");
 		offManBtn.setMaxWidth(Double.MAX_VALUE);
+		offManBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				handleStatusButtonClick(Protocol.NONE);
+			}
+		});
 
 		grid.add(ctrlLabel, 0, 0, 2, 1);
 		grid.add(autLabel, 0, 1, 2, 1);
@@ -391,7 +400,7 @@ public class App extends Application {
 		grid.add(redManBtn, 1, 11, 1, 1);
 
 		grid.add(manBlinkYellowLabel, 0, 12, 1, 1);
-		grid.add(blinkManBtn, 1, 12, 1, 1);
+		grid.add(flashManBtn, 1, 12, 1, 1);
 
 		grid.add(manOffLabel, 0, 13, 1, 1);
 		grid.add(offManBtn, 1, 13, 1, 1);
@@ -401,13 +410,42 @@ public class App extends Application {
 
 	public static List<Integer> getSelectedClientIds() {
 		List<Integer> clientIds = new ArrayList<Integer>();
-		for (Client client : clientList) {
-
+		for (MockClient client : mockClientList) {
+logger.info("MockClient.isSelected: " + client.isSelected());
 			if (client.isSelected()) {
 				clientIds.add(client.getId());
 			}
 		}
 		return clientIds;
 
+	}
+
+	public static int addNewMockClient(MockClient client) {
+		int id = App.clientCounter;
+		client.idProperty().set(id);
+		mockClientList.add(client);
+		updateMockClientTable();
+		return id;
+	}
+
+	public static void updateMockClientTable() {
+		clientTable.setItems(mockClientList);
+		clientTable.refresh();
+	}
+	
+	
+	public static MockClient getMockClient(int id){
+		for(MockClient client: mockClientList){
+			if(client.getId() == id){
+				return client;
+			}
+		}
+		return null;
+	}
+	
+	private void handleStatusButtonClick(int status){
+		logger.info("Setting all selected clients " + Protocol.statusToString(status));
+		lastAction = status;
+		server.updateAllThreads(status, getSelectedClientIds());
 	}
 }

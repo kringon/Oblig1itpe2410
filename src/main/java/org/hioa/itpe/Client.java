@@ -4,10 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,11 +59,16 @@ public class Client extends Task {
 
 	@Override
 	protected Object call() throws Exception {
-		try (Socket kkSocket = new Socket(ip.getValue(), port.getValue());
-				PrintWriter out = new PrintWriter(kkSocket.getOutputStream(), true);
-				BufferedReader in = new BufferedReader(new InputStreamReader(kkSocket.getInputStream()));) {
+		try (Socket socket = new Socket(ip.getValue(), port.getValue());
+				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));) {
 
 			String fromServer;
+			ObjectMapper mapper = new ObjectMapper();
+
+			Message message = new Message(InetAddress.getLocalHost().getHostAddress(), port.getValue(),
+					"connecting to server, requesting ID");
+			out.println(mapper.writeValueAsString(message));
 
 			// Counters for the cycle:
 			int greenCounter = 0;
@@ -73,10 +77,21 @@ public class Client extends Task {
 			// Keep reading server output
 			while ((fromServer = in.readLine()) != null) {
 				logger.info("FromServer: " + fromServer);
-				// logger.info("In.readline: " + in.readLine());
 
+				int tempStatus = this.status;
+				
 				updateFromServerJSON(fromServer);
+				
+				//Status has changed depending on input from server
+				if(tempStatus != this.status){
+					Message msg = new Message();
+					msg.setMessage("Status was updated");
+					msg.setStatus(this.status);
+					msg.setClientId(this.getId());
+					out.println(mapper.writeValueAsString(msg));
+				}
 				// Run cycle status if cycle is set to true:
+
 				while (cycle) {
 					// Switch to RED when starting the cycle.(starts at CYCLE)
 					if (this.status == Protocol.CYCLE) {
@@ -129,18 +144,20 @@ public class Client extends Task {
 				} // end of while (cycle)
 					// TODO:
 				boolean yellowOn = false; // used by status: Flashing
+
 				while (status == Protocol.FLASHING) {
 					updateStatusMessage(0);
 					// Switch to NONE (if previous status = on)
 					if (yellowOn) {
 						updateImage(Protocol.NONE);
-						Thread.sleep(1000);
+						Thread.sleep(this.yellowInterval);
 						yellowOn = false; // set local variable to indicate
 											// yellow off
 					} // Switch to YELLOW (if previous status = off)
 					else {
 						updateImage(Protocol.YELLOW);
-						Thread.sleep(1000);
+						Thread.sleep(this.yellowInterval);
+						yellowOn = true;
 					}
 				}
 
@@ -163,29 +180,42 @@ public class Client extends Task {
 		Message message;
 		try {
 			message = mapper.readValue(fromServer, Message.class);
-			this.setSelected(false);
-			for (Integer id : message.getIdList()) {
-				if (this.getId() == id) {
-					this.setSelected(true);
-				}
-			}
-			this.setSelected(true);
-			if (this.isSelected()) {
-				int statusFromServer = message.getStatus();
-				if (statusFromServer == Protocol.CYCLE) {
-					this.status = Protocol.CYCLE;
-					this.cycle = true;
-					this.greenInterval = message.getGreenInterval();
-					this.yellowInterval = message.getYellowInterval();
-					this.redInterval = message.getRedInterval();
-				} else if (statusFromServer == Protocol.FLASHING) {
+			if (message.getMessage() != null && message.getMessage().contains("Recieved connection, returning ID")) {
 
-				} else {
-					this.status = statusFromServer;
-					updateStatusMessage(0);
-					updateImage();
+				this.id.set(message.getClientId());
+			} else {
+
+				// Do regular status updates
+				this.setSelected(false);
+				for (Integer id : message.getIdList()) {
+
+					if (this.getId() == id) {
+						this.setSelected(true);
+
+					}
+				}
+				// this.setSelected(true);
+				if (this.isSelected()) {
+					int statusFromServer = message.getStatus();
+
+					if (statusFromServer == Protocol.CYCLE) {
+						this.status = Protocol.CYCLE;
+						this.cycle = true;
+						this.greenInterval = message.getGreenInterval();
+						this.yellowInterval = message.getYellowInterval();
+						this.redInterval = message.getRedInterval();
+					} else if (statusFromServer == Protocol.FLASHING) {
+						this.status = Protocol.FLASHING;
+						this.yellowInterval = 1500;
+					} else {
+						this.status = statusFromServer;
+						updateStatusMessage(0);
+						updateImage();
+
+					}
 				}
 			}
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -201,47 +231,18 @@ public class Client extends Task {
 	}
 
 	private void updateStatusMessage(int remainingCycleTime) {
-		String message = statusToString(this.status);
+		String message = Protocol.statusToString(this.status);
 		if (cycle) {
 			message += " (" + remainingCycleTime + "s)";
 		}
 		setStatusMessage(message);
 	}
 
-	public String statusToString(int status) {
-		switch (status) {
-		case Protocol.NONE:
-			return "Standby";
-		case Protocol.GREEN:
-			return "Green";
-		case Protocol.YELLOW:
-			return "Yellow";
-		case Protocol.RED:
-			return "Red";
-		case Protocol.RED_YELLOW:
-			return "Red/Yellow";
-		case Protocol.FLASHING:
-			return "Flashing yellow";
-		case Protocol.CYCLE:
-			return "Cycle";
-		default:
-			return "Standby";
-		}
-	}
+	
 
 	// Updates the displayed traffic light image (uses field variable)
 	public void updateImage() {
-		if (status == Protocol.GREEN) {
-			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/green.png")));
-		} else if (status == Protocol.RED) {
-			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/red.png")));
-		} else if (status == Protocol.RED_YELLOW) {
-			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/red_yellow.png")));
-		} else if (status == Protocol.YELLOW) {
-			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/yellow.png")));
-		} else {
-			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/none.png")));
-		}
+		updateImage(this.status);
 	}
 
 	// Updates the displayed traffic light image (uses paramater variable)
