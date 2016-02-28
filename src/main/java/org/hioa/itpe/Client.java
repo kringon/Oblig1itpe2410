@@ -151,12 +151,13 @@ public class Client extends Task {
 		Message message;
 		try {
 			message = mapper.readValue(fromServer, Message.class);
-
+			this.setSelected(false);
 			for (Integer id : message.getIdList()) {
 				if (this.getId() == id) {
 					this.setSelected(true);
 				}
 			}
+			this.setSelected(true);
 			if (this.isSelected()) {
 				int statusFromServer = message.getStatus();
 				if (statusFromServer == Protocol.CYCLE) {
@@ -190,7 +191,7 @@ public class Client extends Task {
 	private void updateStatusMessage(int remainingCycleTime) {
 		String message = statusToString(this.status);
 		if (cycle) {
-			message += remainingCycleTime + "s";
+			message += " (" + remainingCycleTime + "s)";
 		}
 		setStatusMessage(message);
 	}
