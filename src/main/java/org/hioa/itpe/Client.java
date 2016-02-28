@@ -73,7 +73,7 @@ public class Client extends Task {
 			// Keep reading server output
 			while ((fromServer = in.readLine()) != null) {
 				logger.info("FromServer: " + fromServer);
-				logger.info("In.readline: " + in.readLine());
+				//logger.info("In.readline: " + in.readLine());
 
 				updateFromServerJSON(fromServer);
 				// Run cycle status if cycle is set to true:
@@ -115,7 +115,7 @@ public class Client extends Task {
 						}
 					} // Switch to RED (if previously normal yellow)
 					else if (this.status == Protocol.YELLOW) {
-						this.status = Protocol.GREEN;
+						this.status = Protocol.RED;
 						updateImage(); // update displayed image
 						yellowCounter = 0; // reset yellow counter.
 						while (redCounter < redInterval) {

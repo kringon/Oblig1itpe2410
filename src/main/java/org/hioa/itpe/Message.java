@@ -10,10 +10,18 @@ public class Message {
 	private int greenInterval;
 	private int yellowInterval;
 	private int redInterval;
+	
+	// Default constructor needed for JSON
+	public Message() {
+		
+	}
 
-
-	public Message(ArrayList<Integer> idList){
+	public Message(ArrayList<Integer> idList, int status, int greenInterval, int yellowInterval, int redInterval){
 		this.idList = idList;
+		this.status = status;
+		this.greenInterval = greenInterval;
+		this.yellowInterval = yellowInterval;
+		this.redInterval = redInterval;
 	}
 
 

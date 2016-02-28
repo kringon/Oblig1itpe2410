@@ -59,15 +59,15 @@ public class Protocol {
     
     
     private int status;
-	private int greenInterval;
-	private int yellowInterval;
-	private int redInterval;
+	private int greenInterval = 5;
+	private int yellowInterval = 2;
+	private int redInterval = 5;
     //private int intersection;
     
     private ArrayList<Integer> idList;
     
     public Protocol() {
-    	status = NONE;
+    	status = CYCLE;
     	idList = new ArrayList<Integer>();
     }
     
@@ -75,11 +75,7 @@ public class Protocol {
     public String output() {
     	ObjectMapper mapper = new ObjectMapper();
     	
-    	Message message = new Message(idList);
-    	message.setStatus(status);
-    	message.setGreenInterval(greenInterval);
-    	message.setYellowInterval(yellowInterval);
-    	message.setRedInterval(redInterval);
+    	Message message = new Message(idList, status, greenInterval, yellowInterval, redInterval);
     	
     	// Convert object to JSON string
     	try {
