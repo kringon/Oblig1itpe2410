@@ -73,7 +73,7 @@ public class Client extends Task {
 			// Keep reading server output
 			while ((fromServer = in.readLine()) != null) {
 				logger.info("FromServer: " + fromServer);
-				//logger.info("In.readline: " + in.readLine());
+				// logger.info("In.readline: " + in.readLine());
 
 				updateFromServerJSON(fromServer);
 				// Run cycle status if cycle is set to true:
@@ -128,8 +128,20 @@ public class Client extends Task {
 
 				} // end of while (cycle)
 					// TODO:
+				boolean yellowOn = false; // used by status: Flashing
 				while (status == Protocol.FLASHING) {
-
+					updateStatusMessage(0);
+					// Switch to NONE (if previous status = on)
+					if (yellowOn) {
+						updateImage(Protocol.NONE);
+						Thread.sleep(1000);
+						yellowOn = false; // set local variable to indicate
+											// yellow off
+					} // Switch to YELLOW (if previous status = off)
+					else {
+						updateImage(Protocol.YELLOW);
+						Thread.sleep(1000);
+					}
 				}
 
 			}
@@ -217,8 +229,23 @@ public class Client extends Task {
 		}
 	}
 
-	// Updates the displayed traffic light image
+	// Updates the displayed traffic light image (uses field variable)
 	public void updateImage() {
+		if (status == Protocol.GREEN) {
+			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/green.png")));
+		} else if (status == Protocol.RED) {
+			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/red.png")));
+		} else if (status == Protocol.RED_YELLOW) {
+			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/red_yellow.png")));
+		} else if (status == Protocol.YELLOW) {
+			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/yellow.png")));
+		} else {
+			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/none.png")));
+		}
+	}
+
+	// Updates the displayed traffic light image (uses paramater variable)
+	public void updateImage(int status) {
 		if (status == Protocol.GREEN) {
 			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/green.png")));
 		} else if (status == Protocol.RED) {
@@ -273,4 +300,3 @@ public class Client extends Task {
 	}
 
 }
-
