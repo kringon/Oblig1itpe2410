@@ -161,7 +161,7 @@ public class Client extends Task {
 				}
 				else {
 					this.status = statusFromServer;
-					updateStatusMessage();
+					updateStatusMessage(0);
 					updateImage();
 				}
 			}
