@@ -40,6 +40,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.*;
 
 
@@ -56,11 +59,12 @@ public class Protocol {
     
     
     private int status;
-    //Green,yellow,red
-    private int[] interval = {0, 0, 0};
+	private int greenInterval;
+	private int yellowInterval;
+	private int redInterval;
     //private int intersection;
     
-    private List idList;
+    private ArrayList<Integer> idList;
     
     public Protocol() {
     	status = NONE;
@@ -69,18 +73,20 @@ public class Protocol {
     
     // returns a JSON String
     public String output() {
-    	JSONObject jsonObj = new JSONObject();
+    	ObjectMapper mapper = new ObjectMapper();
     	
-
+    	Message message = new Message(idList);
+    	message.setStatus(status);
+    	message.setGreenInterval(greenInterval);
+    	message.setYellowInterval(yellowInterval);
+    	message.setRedInterval(redInterval);
+    	
+    	// Convert object to JSON string
     	try {
-    		jsonObj.put("idList", idList);
-			jsonObj.put("status", status);
-			jsonObj.put("interval", interval);
-
-			logger.info("JsonObj: " + jsonObj.);
-			return jsonObj.toString();
-			
-		} catch (JSONException e) {
+			String jsonInString = mapper.writeValueAsString(message);
+			return jsonInString;
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	
@@ -107,12 +113,12 @@ public class Protocol {
     }
     
     public void setInterval(int green, int yellow, int red) {
-    	interval[0] = green;
-    	interval[1] = yellow;
-    	interval[2] = red;
+    	greenInterval = green;
+    	yellowInterval = yellow;
+    	redInterval = red;
     }
     
-    public void setIdList(List idList) {
+    public void setIdList(ArrayList<Integer> idList) {
     	this.idList = idList;
     }
     

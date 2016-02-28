@@ -13,7 +13,7 @@ public class Message {
 
 
 	public Message(ArrayList<Integer> idList){
-		
+		this.idList = idList;
 	}
 
 
