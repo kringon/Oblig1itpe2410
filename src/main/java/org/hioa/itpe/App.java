@@ -68,7 +68,7 @@ public class App extends Application {
     public static int clientCounter = 0;
     public static int serverCounter = 0;
     private boolean serverStarted = false;
-    public static List<Client> clientList;
+    public static ObservableList<Client> clientList;
 
     /**
      * @param args the command line arguments
@@ -88,10 +88,11 @@ public class App extends Application {
 
         ///////////////////////
 
-        clientList = new ArrayList<Client>();
+        clientList = FXCollections.observableArrayList();
 
         border.setLeft(addClientPane());
         updateClientTable();
+        
 
         // Add a stack to the HBox in the top region
         addStackPane(hbox);
@@ -106,6 +107,7 @@ public class App extends Application {
         scene.getStylesheets().add("CSS/AppStyle.css");
         stage.setTitle("Traffic light control ");
         stage.show();
+        
     }
 
     /*
@@ -243,8 +245,9 @@ public class App extends Application {
 
         ipColumn.setCellValueFactory(new PropertyValueFactory<Client, String>("ip"));
         portColumn.setCellValueFactory(new PropertyValueFactory<Client, Integer>("port"));
-        chkboxColumn.setCellValueFactory(new PropertyValueFactory<Client, Boolean>("selected"));
         idColumn.setCellValueFactory(new PropertyValueFactory<Client, Integer>("id"));
+        statusColumn.setCellValueFactory(new PropertyValueFactory<Client, String>("status"));
+        chkboxColumn.setCellValueFactory(new PropertyValueFactory<Client, Boolean>("selected"));
         chkboxColumn.setCellFactory(CheckBoxTableCell.forTableColumn(chkboxColumn));
         chkboxColumn.setEditable(true);
         clientTable.setEditable(true);
@@ -257,10 +260,7 @@ public class App extends Application {
     // TODO: Change to append new client to list, and remove any clients that
     // has disconnected(seperate method?)
     public static void updateClientTable() {
-        // Creates an observable list from the received clients list.
-        ObservableList<Client> obList = FXCollections.observableArrayList(clientList);
-        // Places this list in the client table view.
-        clientTable.setItems(obList);
+        clientTable.setItems(clientList);
 
     }
 

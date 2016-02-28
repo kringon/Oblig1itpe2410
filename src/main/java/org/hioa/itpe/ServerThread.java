@@ -20,8 +20,9 @@ public class ServerThread extends Thread {
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));) {
 			String inputLine, outputLine;
 			Protocol kkp = new Protocol();
-			outputLine = kkp.processInput("none");
+			outputLine = kkp.output();
 			out.println(outputLine);
+			/*
 			System.out.println("After outputline");
 			while (true) {
 				sleep(3000);
@@ -33,7 +34,7 @@ public class ServerThread extends Thread {
 					counter++;
 				}
 
-				outputLine = kkp.processInput(inputLine);
+				//outputLine = kkp.processInput(inputLine);
 				out.println(outputLine);
 
 				if (inputLine == "stop") {
@@ -41,11 +42,9 @@ public class ServerThread extends Thread {
 				}
 
 			}
+			*/
 			socket.close();
 		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

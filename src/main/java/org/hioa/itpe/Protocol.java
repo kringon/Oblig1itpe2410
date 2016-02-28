@@ -32,16 +32,60 @@ package org.hioa.itpe;
  */ 
 
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.*;
 
+
 public class Protocol {
-    private static final int NONE = 0;
-    private static final int GREEN = 1;
-    private static final int YELLOW = 2;
-    private static final int RED = 3;
-
-
-    private int state = GREEN;
+	
+	private static Logger logger = LoggerFactory.getLogger(Protocol.class);
+    public static final int NONE = 0;
+    public static final int GREEN = 1;
+    public static final int YELLOW = 2;
+    public static final int RED = 3;
+    public static final int RED_YELLOW = 4;
+    public static final int FLASHING = 5;
+    public static final int CYCLE = 6;
+    
+    
+    private int status;
+	private int greenInterval = 5;
+	private int yellowInterval = 2;
+	private int redInterval = 5;
+    //private int intersection;
+    
+    private ArrayList<Integer> idList;
+    
+    public Protocol() {
+    	status = NONE;
+    	idList = new ArrayList<Integer>();
+    }
+    
+    // returns a JSON String
+    public String output() {
+    	ObjectMapper mapper = new ObjectMapper();
+    	
+    	Message message = new Message(idList, status, greenInterval, yellowInterval, redInterval);
+    	
+    	// Convert object to JSON string
+    	try {
+			String jsonInString = mapper.writeValueAsString(message);
+			return jsonInString;
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	return "";
+    }
 
 
     public String processInput(String theInput) {
@@ -57,4 +101,21 @@ public class Protocol {
         }
         return theOutput;
     }
+    
+    public void setStatus(int status) {
+    	this.status = status;
+    }
+    
+    public void setInterval(int green, int yellow, int red) {
+    	greenInterval = green;
+    	yellowInterval = yellow;
+    	redInterval = red;
+    }
+    
+    public void setIdList(ArrayList<Integer> idList) {
+    	this.idList = idList;
+    }
+    
+    
+    
 }
