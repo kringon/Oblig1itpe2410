@@ -258,7 +258,7 @@ public class App extends Application {
     // has disconnected(seperate method?)
     public static void updateClientTable() {
         // Creates an observable list from the received clients list.
-        ObservableList<Client> obList = FXCollections.observableArrayList(JavaFxstyle.clientList);
+        ObservableList<Client> obList = FXCollections.observableArrayList(clientList);
         // Places this list in the client table view.
         clientTable.setItems(obList);
 
