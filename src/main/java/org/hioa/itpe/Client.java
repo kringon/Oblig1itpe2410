@@ -24,11 +24,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Client extends Task {
-	private StringProperty ip;
-	private IntegerProperty port;
-	private BooleanProperty selected;
-	private IntegerProperty id;
-	private StringProperty statusMessage;
+	private String ip;
+	private int port;
+	private boolean selected;
+	private int id;
+	private String statusMessage;
 
 	private static Logger logger = LoggerFactory.getLogger(Client.class);
 
@@ -44,12 +44,11 @@ public class Client extends Task {
 	private LightFlashingTask flashingTask;
 
 	public Client(String ip, int port, ImageView dispImage, int id) {
-		this.ip = new SimpleStringProperty(ip);
-		this.port = new SimpleIntegerProperty(port);
-		this.selected = new SimpleBooleanProperty(true);
+		this.ip = ip;
+		this.port = port;
 		this.displayedImage = dispImage;
-		this.id = new SimpleIntegerProperty(id);
-		this.statusMessage = new SimpleStringProperty("Standby");
+		this.id = id;
+		this.statusMessage = "Standby";
 
 		this.status = 0;
 		this.cycle = false;
@@ -68,14 +67,14 @@ public class Client extends Task {
 
 		while (!Thread.currentThread().isInterrupted()) {
 
-			try (Socket socket = new Socket(ip.getValue(), port.getValue());
+			try (Socket socket = new Socket(ip, port);
 					PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 					BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));) {
 
 				String fromServer;
 				ObjectMapper mapper = new ObjectMapper();
 
-				Message message = new Message(InetAddress.getLocalHost().getHostAddress(), port.getValue(),
+				Message message = new Message(InetAddress.getLocalHost().getHostAddress(), port,
 						"connecting to server, requesting ID");
 				out.println(mapper.writeValueAsString(message));
 
@@ -100,10 +99,10 @@ public class Client extends Task {
 			} catch (
 
 			UnknownHostException e) {
-				System.err.println("Don't know about host " + ip.getValue());
+				System.err.println("Don't know about host " + ip);
 				System.exit(1);
 			} catch (IOException e) {
-				System.err.println("Couldn't get I/O for the connection to " + ip.getValue());
+				System.err.println("Couldn't get I/O for the connection to " + ip);
 				System.exit(1);
 			}
 
@@ -123,12 +122,12 @@ public class Client extends Task {
 
 			if (message.getMessage() != null && message.getMessage().contains("Recieved connection, returning ID")) {
 
-				this.id.set(message.getClientId());
+				this.id = message.getClientId();
 			} else {
 
 				boolean inList = false;
 				for (Integer id : message.getIdList()) {
-					if (id.intValue() == this.getId()) {
+					if (id.intValue() == this.id) {
 						inList = true;
 					}
 				}
@@ -186,12 +185,12 @@ public class Client extends Task {
 	}
 
 	public void setSelected(boolean selected) {
-		this.selected.set(selected);
+		this.selected = selected;
 	}
 	
 	// Set status message:
-	public void setStatusMessage(String statusMessage) {
-		MockClient mock = App.getMockClient(id.intValue());
+	public void sendStatusToServer(String statusMessage) {
+		MockClient mock = App.getMockClient(id);
 		if (mock != null) {
 			mock.setStatusMessage(statusMessage);
 		}
@@ -202,7 +201,7 @@ public class Client extends Task {
 		if (cycle) {
 			message += " (" + remainingCycleTime + "s)";
 		}
-		setStatusMessage(message);
+		statusMessage = message;
 	}
 
 	// Updates the displayed traffic light image (uses field variable)
@@ -214,56 +213,36 @@ public class Client extends Task {
 	// Updates the displayed traffic light image (uses paramater variable)
 	public void updateImage(int status) {
 		if (status == Protocol.GREEN) {
-			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/green.png")));
+			displayedImage.setImage(new Image(Client.class.getResourceAsStream("graphics/green.png")));
 		} else if (status == Protocol.RED) {
-			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/red.png")));
+			displayedImage.setImage(new Image(Client.class.getResourceAsStream("graphics/red.png")));
 		} else if (status == Protocol.RED_YELLOW) {
-			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/red_yellow.png")));
+			displayedImage.setImage(new Image(Client.class.getResourceAsStream("graphics/red_yellow.png")));
 		} else if (status == Protocol.YELLOW) {
-			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/yellow.png")));
+			displayedImage.setImage(new Image(Client.class.getResourceAsStream("graphics/yellow.png")));
 		} else {
-			displayedImage.setImage(new Image(App.class.getResourceAsStream("graphics/none.png")));
+			displayedImage.setImage(new Image(Client.class.getResourceAsStream("graphics/none.png")));
 		}
 	}
 
 	public boolean isSelected() {
-		return selected.get();
+		return selected;
 	}
 
 	public String getIp() {
-		return ip.get();
+		return ip;
 	}
 
 	public int getPort() {
-		return port.get();
+		return port;
 	}
 
 	public int getId() {
-		return id.get();
+		return id;
 	}
 
 	public int getStatus() {
 		return status;
-	}
-
-	public StringProperty ipProperty() {
-		return ip;
-	}
-
-	public IntegerProperty portProperty() {
-		return port;
-	}
-
-	public IntegerProperty idProperty() {
-		return id;
-	}
-
-	public BooleanProperty selectedProperty() {
-		return selected;
-	}
-
-	public StringProperty statusProperty() {
-		return statusMessage;
 	}
 	
 	private class LightCycleTask extends Thread {
