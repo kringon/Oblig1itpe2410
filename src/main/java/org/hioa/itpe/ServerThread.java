@@ -18,7 +18,6 @@ public class ServerThread extends Thread {
 	// private int lastPrintedAction;
 
 	private int lastProtocolId;
-	// TODO: change to JSON from protocol
 	private Protocol protocol;
 
 	private PrintWriter out;
