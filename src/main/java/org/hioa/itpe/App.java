@@ -99,6 +99,7 @@ public class App extends Application {
 		mockClientList = FXCollections.observableArrayList();
 		// Create clientPane and place in border pane:
 		border.setLeft(addClientPane());
+		initColumnsSize();
 
 		// Add a stack to the HBox in the top region
 		addStackPane(hbox);
@@ -293,7 +294,7 @@ public class App extends Application {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					clientTable.getProperties().put(TableViewSkinBase.RECREATE, Boolean.TRUE);
+					clientTable.getProperties().put(TableViewSkinBase.RECREATE, Boolean.TRUE); // refresh
 				}
 			}
 		};
@@ -302,11 +303,11 @@ public class App extends Application {
 	}
 	
 	private void initColumnsSize() {  
-        this.chkboxColumn.setMinWidth(20);  
+        this.chkboxColumn.setMinWidth(15);  
         this.ipColumn.setMinWidth(50);  
-        this.portColumn.setMinWidth(70);  
-        this.idColumn.setMinWidth(100);
-        this.statusColumn.setMinWidth(150);
+        this.portColumn.setMinWidth(20);  
+        this.idColumn.setMinWidth(20);
+        this.statusColumn.setMinWidth(100);
 	}
 
 	private GridPane addGridPane() {
@@ -467,7 +468,7 @@ public class App extends Application {
 	public static List<Integer> getSelectedClientIds() {
 		List<Integer> clientIds = new ArrayList<Integer>();
 		for (MockClient client : mockClientList) {
-			logger.info("MockClient.isSelected: " + client.isSelected());
+			logger.info("MockClient.isSelected: " + client.isSelected() + " (id: " + client.getId() + ")");
 			if (client.isSelected()) {
 				clientIds.add(client.getId());
 			}

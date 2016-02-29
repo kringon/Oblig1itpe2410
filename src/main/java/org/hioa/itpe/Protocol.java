@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Protocol {
 
 	private static Logger logger = LoggerFactory.getLogger(Protocol.class);
-	
+
 	public static final int NONE = 1;
 	public static final int GREEN = 2;
 	public static final int YELLOW = 3;
@@ -23,10 +23,9 @@ public class Protocol {
 	public static final int RED_YELLOW = 5;
 	public static final int FLASHING = 6;
 	public static final int CYCLE = 7;
-	
+
 	private static int protocolIdCounter = 0;
 	private int protocolId;
-
 
 	private int status;
 	private int greenInterval = 0;
@@ -88,20 +87,21 @@ public class Protocol {
 		this.idList = idList;
 	}
 
-	public static String processClientOutput(String message) throws JsonParseException, JsonMappingException, IOException {
+	public static String processClientOutput(String message)
+			throws JsonParseException, JsonMappingException, IOException {
 		if (message.contains("connecting to server, requesting ID")) {
 			ObjectMapper mapper = new ObjectMapper();
-			
-				Message msg = mapper.readValue(message, Message.class);
-				
-				int id = App.addNewMockClient(new MockClient(msg.getIp(), msg.getPort()));
-				msg = new Message();
-				msg.setMessage("Recieved connection, returning ID: " + id);
-				msg.setClientId(id);
-				
-				return mapper.writeValueAsString(msg);
-			
-		}else if(message.contains("Status was updated")){
+
+			Message msg = mapper.readValue(message, Message.class);
+
+			int id = App.addNewMockClient(new MockClient(msg.getIp(), msg.getPort()));
+			msg = new Message();
+			msg.setMessage("Recieved connection, returning ID: " + id);
+			msg.setClientId(id);
+
+			return mapper.writeValueAsString(msg);
+
+		} else if (message.contains("Status was updated")) {
 			logger.info("status was updated");
 			ObjectMapper mapper = new ObjectMapper();
 			Message msg = mapper.readValue(message, Message.class);
@@ -145,7 +145,7 @@ public class Protocol {
 		return "failed to produce message";
 
 	}
-	
+
 	public int getProtocolId() {
 		return protocolId;
 	}

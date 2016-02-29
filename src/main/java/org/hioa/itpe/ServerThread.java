@@ -5,15 +5,17 @@ import java.net.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.*;
 
 public class ServerThread extends Thread {
 	
 	private int connectedClientId;
-	
+
 	private Socket socket = null;
 	private static Logger logger = LoggerFactory.getLogger(ServerThread.class);
-	private int lastPrintedAction;
+	// private int lastPrintedAction;
 
 	private int lastProtocolId;
 	// TODO: change to JSON from protocol
@@ -46,6 +48,11 @@ public class ServerThread extends Thread {
 					logger.info("Getting info from client: " + inputLine);
 					String output = Protocol.processClientOutput(inputLine);
 					if (output.contains("Recieved connection, returning ID")) {
+						// Store id of client:
+						ObjectMapper mapper = new ObjectMapper();
+						Message msg = mapper.readValue(output, Message.class);
+						connectedClientId = msg.getClientId();
+						// Send id to client:
 						out.println(output);
 					}
 					
@@ -81,7 +88,7 @@ public class ServerThread extends Thread {
 		}
 
 	}
-	// TODO: remove
+	// TODO: maybe remove
 	public void setProtocol(Protocol protocol) {
 		this.protocol = protocol;
 	}
@@ -89,5 +96,10 @@ public class ServerThread extends Thread {
 	public void printMessage(String message) {
 		out.println(message);
 	}
+	
+	public int getConnectedClientId() {
+		return connectedClientId;
+	}
+	
 
 }
