@@ -9,9 +9,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class Message {
 	private int messageId; // Instead of using lastAction. May not be necessary now?
 	
+	private int messageType;
+
+	public static int REQUEST_ID_MSG = 1;
+	public static int SEND_STATUS_MSG = 2;
+	
 	private List<Integer> idList;
 	// private String status;
 	private int status;
+	private String statusMessage;
+
+
 	private int greenInterval;
 	private int yellowInterval;
 	private int redInterval;
@@ -120,5 +128,21 @@ public class Message {
 
 	public void setClientId(int clientId) {
 		this.clientId = clientId;
+	}
+	
+	public String getStatusMessage() {
+		return statusMessage;
+	}
+
+	public void setStatusMessage(String statusMessage) {
+		this.statusMessage = statusMessage;
+	}
+	
+	public int getMessageType() {
+		return messageType;
+	}
+
+	public void setMessageType(int messageType) {
+		this.messageType = messageType;
 	}
 }
