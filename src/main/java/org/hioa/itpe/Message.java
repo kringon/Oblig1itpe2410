@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Message {
+	private int messageId; // Instead of using lastAction. May not be necessary now?
+	
 	private List<Integer> idList;
 	// private String status;
 	private int status;
@@ -29,7 +31,12 @@ public class Message {
 		this.setPort(port);
 		this.setMessage(message);
 	}
-
+	
+	public Message(List<Integer> idList, int status) {
+		this.idList = idList;
+		this.status = status;
+	}
+	
 	public Message(List<Integer> idList, int status, int greenInterval, int yellowInterval, int redInterval) {
 		this.idList = idList;
 		this.status = status;

@@ -67,4 +67,9 @@ and open the template in the editor.
     -fx-border-color: #E0E0E0;
 }
 
+.table-cell {
+    -fx-alignment: CENTER;
+
+}
+
 

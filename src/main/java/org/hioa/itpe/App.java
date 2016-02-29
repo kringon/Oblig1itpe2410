@@ -8,6 +8,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.javafx.scene.control.skin.TableViewSkinBase;
+
 import javafx.application.Application;
 
 import javafx.collections.FXCollections;
@@ -18,8 +20,11 @@ import javafx.geometry.Pos;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TableColumn;
@@ -55,21 +60,28 @@ import javafx.stage.Stage;
 
 public class App extends Application {
 
-	private static TableView clientTable;
-	private TableColumn chkboxColumn;
-	private TableColumn ipColumn;
-	private TableColumn portColumn;
-	private TableColumn idColumn;
-	private TableColumn intersectColumn;
-	private TableColumn statusColumn;
+	// Client table:
+	private static TableView<MockClient> clientTable;
+	private TableColumn<MockClient, Boolean> chkboxColumn;
+	private TableColumn<MockClient, String> ipColumn;
+	private TableColumn<MockClient, Integer> portColumn;
+	private TableColumn<MockClient, Integer> idColumn;
+	// private TableColumn<MockClient, String> intersectColumn;
+	private TableColumn<MockClient, String> statusColumn;
+	
+	private ScrollPane clientTableScroll;
+
+	// Spinners for cycle interval:
+	private Spinner<Integer> greenSpinner;
+	private Spinner<Integer> yellowSpinner;
+	private Spinner<Integer> redSpinner;
 
 	private static Logger logger = LoggerFactory.getLogger(App.class);
 	private Server server;
 	public static int clientCounter = 0;
 	public static int serverCounter = 0;
-	//public static ObservableList<Client> clientList;
 	public static ObservableList<MockClient> mockClientList;
-	public static int lastAction = Protocol.NONE;
+	// public static int lastAction = Protocol.NONE;
 
 	/**
 	 * @param args
@@ -87,14 +99,11 @@ public class App extends Application {
 
 		HBox hbox = addHBox();
 		border.setTop(hbox);
-
-		///////////////////////
-
-		//clientList = FXCollections.observableArrayList();
+		
 		mockClientList = FXCollections.observableArrayList();
-
+		// Create clientPane and place in border pane:
 		border.setLeft(addClientPane());
-		updateMockClientTable();
+		initColumnsSize();
 
 		// Add a stack to the HBox in the top region
 		addStackPane(hbox);
@@ -222,46 +231,97 @@ public class App extends Application {
 		Label clientsDescription = new Label("Select clients to control");
 		clientsDescription.getStyleClass().add("label-control");
 
-		buildClientTable();
+		initClientTable();
 
 		clientPane.add(clientsLabel, 0, 0);
 		clientPane.add(clientsDescription, 0, 1);
-		clientPane.add(clientTable, 0, 2);
+		clientPane.add(clientTableScroll, 0, 2);
 
 		return clientPane;
 	}
 
-	private void buildClientTable() {
+	private void initClientTable() {
+		
+		
 		clientTable = new TableView<>();
 		clientTable.setEditable(false);
-		clientTable.setPrefSize(600, 400); // width, height
+		clientTable.setPrefSize(400, 400); // width, height
 
 		// Initialize columns with titles
-		chkboxColumn = new TableColumn<Client, Boolean>("Select");
-		ipColumn = new TableColumn<Client, String>("IP-address");
-		portColumn = new TableColumn<Client, Integer>("Port");
-		idColumn = new TableColumn<Client, String>("ID");
-		intersectColumn = new TableColumn<Client, String>("Intersection");
-		statusColumn = new TableColumn<Client, String>("Status");
+		chkboxColumn = new TableColumn<MockClient, Boolean>();
+		// Header CheckBox
+		CheckBox cb = new CheckBox();
+		cb.setUserData(this.chkboxColumn);
+		// cb.setOnAction(handleSelectAllCheckbox());
+		cb.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				if (cb.isSelected()) {
+					for (MockClient client : mockClientList) {
+						client.setSelected(true);
+					}
+				} else {
+					for (MockClient client : mockClientList) {
+						client.setSelected(false);
+					}
+				}
+			}
+
+		});
+		this.chkboxColumn.setGraphic(cb);
+
+		ipColumn = new TableColumn<MockClient, String>("IP-address");
+		portColumn = new TableColumn<MockClient, Integer>("Port");
+		idColumn = new TableColumn<MockClient, Integer>("ID");
+		// intersectColumn = new TableColumn<MockClient,
+		// String>("Intersection");
+		statusColumn = new TableColumn<MockClient, String>("Status");
 
 		// Add Columns to the table
-		clientTable.getColumns().addAll(chkboxColumn, ipColumn, portColumn, idColumn, intersectColumn, statusColumn);
+		clientTable.getColumns().addAll(chkboxColumn, ipColumn, portColumn, idColumn, statusColumn);
 
-		ipColumn.setCellValueFactory(new PropertyValueFactory<Client, String>("ip"));
-		portColumn.setCellValueFactory(new PropertyValueFactory<Client, Integer>("port"));
-		idColumn.setCellValueFactory(new PropertyValueFactory<Client, Integer>("id"));
-		statusColumn.setCellValueFactory(new PropertyValueFactory<Client, String>("status"));
-		chkboxColumn.setCellValueFactory(new PropertyValueFactory<Client, Boolean>("selected"));
 		chkboxColumn.setCellFactory(CheckBoxTableCell.forTableColumn(chkboxColumn));
+		chkboxColumn.setCellValueFactory(new PropertyValueFactory<MockClient, Boolean>("selected"));
 		chkboxColumn.setEditable(true);
+		ipColumn.setCellValueFactory(new PropertyValueFactory<MockClient, String>("ip"));
+		portColumn.setCellValueFactory(new PropertyValueFactory<MockClient, Integer>("port"));
+		idColumn.setCellValueFactory(new PropertyValueFactory<MockClient, Integer>("id"));
+		statusColumn.setCellValueFactory(new PropertyValueFactory<MockClient, String>("statusMessage"));
 		clientTable.setEditable(true);
 
 		// Allow the columns to space out over the full size of the table.
 		clientTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		
+		// Wrap TableView in ScrollPane to get scrollbar:
+		clientTableScroll = new ScrollPane();
+		clientTableScroll.setHbarPolicy(ScrollBarPolicy.NEVER); // Never show horizontal scrollbar
+		clientTableScroll.setVbarPolicy(ScrollBarPolicy.ALWAYS); // Always show vertical scrollbar
+		clientTableScroll.setContent(clientTable);
+		
+		// Start thread to refresh table every 1 second
+		Thread updateTableThread = new Thread() {
+			public void run() {
+				while (!Thread.currentThread().isInterrupted()) {
+					try {
+						sleep(1000);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						return;
+					}
+					clientTable.getProperties().put(TableViewSkinBase.RECREATE, Boolean.TRUE); // refresh
+				}
+			}
+		};
+		updateTableThread.start();
 
 	}
-
 	
+	private void initColumnsSize() {  
+        this.chkboxColumn.setMinWidth(15);  
+        this.ipColumn.setMinWidth(50);  
+        this.portColumn.setMinWidth(20);  
+        this.idColumn.setMinWidth(20);
+        this.statusColumn.setMinWidth(100);
+	}
 
 	private GridPane addGridPane() {
 
@@ -284,27 +344,37 @@ public class App extends Application {
 		// spinner parameters
 		final int MIN = 1;
 		final int MAX = 60;
-		final int INITIAL = 30;
+		final int INITIAL_GREEN = 10;
+		final int INITIAL_YELLOW = 3;
+		final int INITIAL_RED = 10;
 		final int STEP = 1;
 
 		Label greenLabel = new Label("Green");
-		final Spinner<Integer> greenSpinner = new Spinner<Integer>();
-		greenSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL, STEP));
-		greenSpinner.setEditable(false);
+		greenSpinner = new Spinner<Integer>();
+		greenSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL_GREEN, STEP));
+		greenSpinner.setEditable(true);
 
 		Label yellowLabel = new Label("Yellow");
-		final Spinner<Integer> yellowSpinner = new Spinner<Integer>();
-		yellowSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL, STEP));
-		yellowSpinner.setEditable(false);
+		yellowSpinner = new Spinner<Integer>();
+		yellowSpinner
+				.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL_YELLOW, STEP));
+		yellowSpinner.setEditable(true);
 
 		Label redLabel = new Label("Red");
-		final Spinner<Integer> redSpinner = new Spinner<Integer>();
-		redSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL, STEP));
-		redSpinner.setEditable(false);
+		redSpinner = new Spinner<Integer>();
+		redSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL_RED, STEP));
+		redSpinner.setEditable(true);
 
 		Button startCycleBtn = new Button("Start Cycle");
 		startCycleBtn.getStyleClass().add("button-set");
 		startCycleBtn.setMaxWidth(Double.MAX_VALUE);
+		// Add action when pressing the "Start Cycle" button
+		startCycleBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				handleStatusButtonClick(Protocol.CYCLE);
+			}
+
+		});
 
 		// Manual options starts here.
 		Label manLabel = new Label("Manual");
@@ -411,7 +481,7 @@ public class App extends Application {
 	public static List<Integer> getSelectedClientIds() {
 		List<Integer> clientIds = new ArrayList<Integer>();
 		for (MockClient client : mockClientList) {
-logger.info("MockClient.isSelected: " + client.isSelected());
+			logger.info("MockClient.isSelected: " + client.isSelected() + " (id: " + client.getId() + ")");
 			if (client.isSelected()) {
 				clientIds.add(client.getId());
 			}
@@ -432,20 +502,25 @@ logger.info("MockClient.isSelected: " + client.isSelected());
 		clientTable.setItems(mockClientList);
 		clientTable.refresh();
 	}
-	
-	
-	public static MockClient getMockClient(int id){
-		for(MockClient client: mockClientList){
-			if(client.getId() == id){
+
+	public static MockClient getMockClient(int id) {
+		for (MockClient client : mockClientList) {
+			if (client.getId() == id) {
 				return client;
 			}
 		}
 		return null;
 	}
-	
-	private void handleStatusButtonClick(int status){
+
+	private void handleStatusButtonClick(int status) {
 		logger.info("Setting all selected clients " + Protocol.statusToString(status));
-		lastAction = status;
-		server.updateAllThreads(status, getSelectedClientIds());
+		Protocol prot = new Protocol();
+		prot.setStatus(status);
+		prot.setIdList(getSelectedClientIds());
+		if (status == Protocol.CYCLE) {
+			prot.setInterval(greenSpinner.getValue(), yellowSpinner.getValue(), redSpinner.getValue());
+		}
+		server.updateAllThreads(prot);
+		// lastAction = status;
 	}
 }

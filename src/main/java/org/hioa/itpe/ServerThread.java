@@ -5,19 +5,33 @@ import java.net.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.*;
 
 public class ServerThread extends Thread {
+	
+	private int connectedClientId;
+
 	private Socket socket = null;
 	private static Logger logger = LoggerFactory.getLogger(ServerThread.class);
-	private int lastPrintedAction;
-	PrintWriter out;
+	// private int lastPrintedAction;
+
+	private int lastProtocolId;
+	// TODO: change to JSON from protocol
+	private Protocol protocol;
+
+	private PrintWriter out;
+
 
 	public ServerThread(Socket socket) {
 
 		super("ServerThread");
-		this.socket = socket;
-		lastPrintedAction = -1;
+		this.socket = socket;	
+		connectedClientId = -1;
+		protocol = new Protocol();
+		
+		// lastPrintedAction = -1;
 	}
 
 	public void run() {
@@ -34,10 +48,26 @@ public class ServerThread extends Thread {
 					logger.info("Getting info from client: " + inputLine);
 					String output = Protocol.processClientOutput(inputLine);
 					if (output.contains("Recieved connection, returning ID")) {
+						// Store id of client:
+						ObjectMapper mapper = new ObjectMapper();
+						Message msg = mapper.readValue(output, Message.class);
+						connectedClientId = msg.getClientId();
+						// Send id to client:
 						out.println(output);
 					}
 					
 				}
+				/*
+				if (lastProtocolId != protocol.getProtocolId()) {
+					String message = protocol.output();
+					
+					if (!message.isEmpty()){
+						out.println(message);
+						lastProtocolId = protocol.getProtocolId();
+					}
+				}
+				*/
+				
 
 				// logger.info("lastPrintedAction: " + lastPrintedAction + "
 				// App.lastAction: " + App.lastAction);
@@ -58,9 +88,20 @@ public class ServerThread extends Thread {
 		}
 
 	}
+	
+	
+	public void updateProtocol(Protocol protocol) {
+		this.protocol = protocol;
+		out.println(protocol.output());
+	}
 
 	public void printMessage(String message) {
 		out.println(message);
 	}
+	
+	public int getConnectedClientId() {
+		return connectedClientId;
+	}
+	
 
 }

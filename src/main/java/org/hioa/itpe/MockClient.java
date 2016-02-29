@@ -20,11 +20,17 @@ public class MockClient {
 	
 	private static Logger logger = LoggerFactory.getLogger(Client.class);
 	
+	// Default constructor necessary for TableView:
+	public MockClient() {
+
+	}
+	
 	public MockClient(String ip, int port){
 		this.ip = new SimpleStringProperty(ip);
 		this.port = new SimpleIntegerProperty(port);
 		this.id = new SimpleIntegerProperty();
-		this.selected = new SimpleBooleanProperty(true);
+		this.selected = new SimpleBooleanProperty(false);
+		this.statusMessage = new SimpleStringProperty("Standby");
 	}
 	
 	public boolean isSelected() {
@@ -41,6 +47,26 @@ public class MockClient {
 
 	public int getId() {
 		return id.get();
+	}
+	
+	public void setSelected(boolean selected) {
+		this.selected.set(selected);
+	}
+	
+	public void setIp(String ip) {
+		this.ip = new SimpleStringProperty(ip);
+	}
+
+	public void setPort(int port) {
+		this.port = new SimpleIntegerProperty(port);
+	}
+
+	public void setId(int id) {
+		this.id = new SimpleIntegerProperty(id);
+	}
+
+	public void setStatusMessage(String statusMessage) {
+		this.statusMessage = new SimpleStringProperty(statusMessage);
 	}
 
 	public StringProperty ipProperty() {
@@ -59,16 +85,9 @@ public class MockClient {
 		return selected;
 	}
 
-	public StringProperty statusProperty() {
+	public StringProperty statusMessageProperty() {
 		return statusMessage;
 	}
-	
-	public void setSelected(boolean selected) {
-		this.selected.set(selected);
-	}
 
-	public void setStatusMessage(String statusMessage) {
-		this.statusMessage = new SimpleStringProperty(statusMessage);
-	}
 
 }

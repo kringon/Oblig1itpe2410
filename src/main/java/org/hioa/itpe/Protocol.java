@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Protocol {
 
 	private static Logger logger = LoggerFactory.getLogger(Protocol.class);
+
 	public static final int NONE = 1;
 	public static final int GREEN = 2;
 	public static final int YELLOW = 3;
@@ -23,17 +24,21 @@ public class Protocol {
 	public static final int FLASHING = 6;
 	public static final int CYCLE = 7;
 
+	private static int protocolIdCounter = 0;
+	private int protocolId;
+
 	private int status;
-	private int greenInterval = 5;
-	private int yellowInterval = 2;
-	private int redInterval = 5;
+	private int greenInterval = 0;
+	private int yellowInterval = 0;
+	private int redInterval = 0;
 	// private int intersection;
 
-	private ArrayList<Integer> idList;
+	private List<Integer> idList;
 
 	public Protocol() {
 		status = NONE;
 		idList = new ArrayList<Integer>();
+		protocolId = protocolIdCounter++;
 	}
 
 	// returns a JSON String
@@ -78,24 +83,25 @@ public class Protocol {
 		redInterval = red;
 	}
 
-	public void setIdList(ArrayList<Integer> idList) {
+	public void setIdList(List<Integer> idList) {
 		this.idList = idList;
 	}
 
-	public static String processClientOutput(String message) throws JsonParseException, JsonMappingException, IOException {
+	public static String processClientOutput(String message)
+			throws JsonParseException, JsonMappingException, IOException {
 		if (message.contains("connecting to server, requesting ID")) {
 			ObjectMapper mapper = new ObjectMapper();
-			
-				Message msg = mapper.readValue(message, Message.class);
-				
-				int id = App.addNewMockClient(new MockClient(msg.getIp(), msg.getPort()));
-				msg = new Message();
-				msg.setMessage("Recieved connection, returning ID: " + id);
-				msg.setClientId(id);
-				
-				return mapper.writeValueAsString(msg);
-			
-		}else if(message.contains("Status was updated")){
+
+			Message msg = mapper.readValue(message, Message.class);
+
+			int id = App.addNewMockClient(new MockClient(msg.getIp(), msg.getPort()));
+			msg = new Message();
+			msg.setMessage("Recieved connection, returning ID: " + id);
+			msg.setClientId(id);
+
+			return mapper.writeValueAsString(msg);
+
+		} else if (message.contains("Status was updated")) {
 			logger.info("status was updated");
 			ObjectMapper mapper = new ObjectMapper();
 			Message msg = mapper.readValue(message, Message.class);
@@ -109,7 +115,7 @@ public class Protocol {
 		Message message = new Message();
 		ObjectMapper mapper = new ObjectMapper();
 		message.setIdList(clientIds);
-		try {
+		try { //Funker ikke message.setStatus(status) ganske greit her, eller bruker du også verdier untenfor 1-7? 
 			switch (status) {
 			case Protocol.GREEN:
 				message.setStatus(Protocol.GREEN);
@@ -139,7 +145,11 @@ public class Protocol {
 		return "failed to produce message";
 
 	}
-	
+
+	public int getProtocolId() {
+		return protocolId;
+	}
+
 	public static String statusToString(int status) {
 		switch (status) {
 		case Protocol.NONE:
