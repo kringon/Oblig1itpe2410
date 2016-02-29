@@ -20,6 +20,7 @@ import javafx.geometry.Pos;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
@@ -57,20 +58,26 @@ import javafx.stage.Stage;
 
 public class App extends Application {
 
-	private static TableView clientTable;
-	private TableColumn chkboxColumn;
-	private TableColumn ipColumn;
-	private TableColumn portColumn;
-	private TableColumn idColumn;
-	private TableColumn intersectColumn;
-	private TableColumn statusColumn;
+	// Client table:
+	private static TableView<MockClient> clientTable;
+	private TableColumn<MockClient, Boolean> chkboxColumn;
+	private TableColumn<MockClient, String> ipColumn;
+	private TableColumn<MockClient, Integer> portColumn;
+	private TableColumn<MockClient, Integer> idColumn;
+	// private TableColumn<MockClient, String> intersectColumn;
+	private TableColumn<MockClient, String> statusColumn;
+
+	// Spinners for cycle interval:
+	private Spinner<Integer> greenSpinner;
+	private Spinner<Integer> yellowSpinner;
+	private Spinner<Integer> redSpinner;
 
 	private static Logger logger = LoggerFactory.getLogger(App.class);
 	private Server server;
 	public static int clientCounter = 0;
 	public static int serverCounter = 0;
-	public static ObservableList<Client> clientList;
-	public static int lastAction;
+	public static ObservableList<MockClient> mockClientList;
+	// public static int lastAction = Protocol.NONE;
 
 	/**
 	 * @param args
@@ -88,13 +95,10 @@ public class App extends Application {
 
 		HBox hbox = addHBox();
 		border.setTop(hbox);
-
-		///////////////////////
-
-		clientList = FXCollections.observableArrayList();
-
+		
+		mockClientList = FXCollections.observableArrayList();
+		// Create clientPane and place in border pane:
 		border.setLeft(addClientPane());
-		updateClientTable();
 
 		// Add a stack to the HBox in the top region
 		addStackPane(hbox);
@@ -106,7 +110,7 @@ public class App extends Application {
 
 		Scene scene = new Scene(border);
 		stage.setScene(scene);
-		scene.getStylesheets().add("CSS/AppStyle.css");
+		scene.getStylesheets().add("/CSS/AppStyle.css");
 		stage.setTitle("Traffic light control ");
 		stage.show();
 
@@ -122,15 +126,14 @@ public class App extends Application {
 		hbox.setSpacing(10); // Gap between nodes
 		hbox.getStyleClass().add("hbox");
 
-		Button btnCreate = new Button("Create Client");
+		final Button btnCreate = new Button("Create Client");
+		btnCreate.setDisable(true);
 		btnCreate.setPrefSize(100, 20);
 		btnCreate.getStyleClass().add("button-start");
 		btnCreate.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
 				logger.info("Creating new client: " + clientCounter);
 				ClientGUI gui = new ClientGUI();
-				clientList.add(gui.getClient());
-				updateClientTable();
 			}
 
 		});
@@ -146,6 +149,7 @@ public class App extends Application {
 				server = new Server();
 				new Thread(server).start();
 				btnStart.setDisable(true);
+				btnCreate.setDisable(false);
 
 			}
 		});
@@ -222,7 +226,7 @@ public class App extends Application {
 		Label clientsDescription = new Label("Select clients to control");
 		clientsDescription.getStyleClass().add("label-control");
 
-		buildClientTable();
+		initClientTable();
 
 		clientPane.add(clientsLabel, 0, 0);
 		clientPane.add(clientsDescription, 0, 1);
@@ -231,34 +235,55 @@ public class App extends Application {
 		return clientPane;
 	}
 
-	private void buildClientTable() {
+	private void initClientTable() {
 		clientTable = new TableView<>();
 		clientTable.setEditable(false);
 		clientTable.setPrefSize(600, 400); // width, height
 
 		// Initialize columns with titles
-		chkboxColumn = new TableColumn<Client, Boolean>("Select");
-		ipColumn = new TableColumn<Client, String>("IP-address");
-		portColumn = new TableColumn<Client, Integer>("Port");
-		idColumn = new TableColumn<Client, String>("ID");
-		intersectColumn = new TableColumn<Client, String>("Intersection");
-		statusColumn = new TableColumn<Client, String>("Status");
+		chkboxColumn = new TableColumn<MockClient, Boolean>();
+		// Header CheckBox
+		CheckBox cb = new CheckBox();
+		cb.setUserData(this.chkboxColumn);
+		// cb.setOnAction(handleSelectAllCheckbox());
+		cb.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				if (cb.isSelected()) {
+					for (MockClient client : mockClientList) {
+						client.setSelected(true);
+					}
+				} else {
+					for (MockClient client : mockClientList) {
+						client.setSelected(false);
+					}
+				}
+			}
+
+		});
+		this.chkboxColumn.setGraphic(cb);
+
+		ipColumn = new TableColumn<MockClient, String>("IP-address");
+		portColumn = new TableColumn<MockClient, Integer>("Port");
+		idColumn = new TableColumn<MockClient, Integer>("ID");
+		// intersectColumn = new TableColumn<MockClient,
+		// String>("Intersection");
+		statusColumn = new TableColumn<MockClient, String>("Status");
 
 		// Add Columns to the table
-		clientTable.getColumns().addAll(chkboxColumn, ipColumn, portColumn, idColumn, intersectColumn, statusColumn);
+		clientTable.getColumns().addAll(chkboxColumn, ipColumn, portColumn, idColumn, statusColumn);
 
-		ipColumn.setCellValueFactory(new PropertyValueFactory<Client, String>("ip"));
-		portColumn.setCellValueFactory(new PropertyValueFactory<Client, Integer>("port"));
-		idColumn.setCellValueFactory(new PropertyValueFactory<Client, Integer>("id"));
-		statusColumn.setCellValueFactory(new PropertyValueFactory<Client, String>("status"));
-		chkboxColumn.setCellValueFactory(new PropertyValueFactory<Client, Boolean>("selected"));
 		chkboxColumn.setCellFactory(CheckBoxTableCell.forTableColumn(chkboxColumn));
+		chkboxColumn.setCellValueFactory(new PropertyValueFactory<MockClient, Boolean>("selected"));
 		chkboxColumn.setEditable(true);
+		ipColumn.setCellValueFactory(new PropertyValueFactory<MockClient, String>("ip"));
+		portColumn.setCellValueFactory(new PropertyValueFactory<MockClient, Integer>("port"));
+		idColumn.setCellValueFactory(new PropertyValueFactory<MockClient, Integer>("id"));
+		statusColumn.setCellValueFactory(new PropertyValueFactory<MockClient, String>("statusMessage"));
 		clientTable.setEditable(true);
 
 		// Allow the columns to space out over the full size of the table.
 		clientTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		
+
 		Thread updateTableThread = new Thread() {
 			public void run() {
 				while (true) {
@@ -275,12 +300,13 @@ public class App extends Application {
 		updateTableThread.start();
 
 	}
-
-	// TODO: Change to append new client to list, and remove any clients that
-	// has disconnected(seperate method?)
-	public static void updateClientTable() {
-		clientTable.setItems(clientList);
-
+	
+	private void initColumnsSize() {  
+        this.chkboxColumn.setMinWidth(20);  
+        this.ipColumn.setMinWidth(50);  
+        this.portColumn.setMinWidth(70);  
+        this.idColumn.setMinWidth(100);
+        this.statusColumn.setMinWidth(150);
 	}
 
 	private GridPane addGridPane() {
@@ -310,17 +336,18 @@ public class App extends Application {
 		final int STEP = 1;
 
 		Label greenLabel = new Label("Green");
-		final Spinner<Integer> greenSpinner = new Spinner<Integer>();
+		greenSpinner = new Spinner<Integer>();
 		greenSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL_GREEN, STEP));
 		greenSpinner.setEditable(true);
 
 		Label yellowLabel = new Label("Yellow");
-		final Spinner<Integer> yellowSpinner = new Spinner<Integer>();
-		yellowSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL_YELLOW, STEP));
+		yellowSpinner = new Spinner<Integer>();
+		yellowSpinner
+				.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL_YELLOW, STEP));
 		yellowSpinner.setEditable(true);
 
 		Label redLabel = new Label("Red");
-		final Spinner<Integer> redSpinner = new Spinner<Integer>();
+		redSpinner = new Spinner<Integer>();
 		redSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL_RED, STEP));
 		redSpinner.setEditable(true);
 
@@ -330,12 +357,7 @@ public class App extends Application {
 		// Add action when pressing the "Start Cycle" button
 		startCycleBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				logger.info("Starting cycling for all selected clients.");
-				Protocol prot = new Protocol();
-				prot.setStatus(Protocol.CYCLE);
-				prot.setIdList(getSelectedClientIds());
-				prot.setInterval(greenSpinner.getValue(), yellowSpinner.getValue(), redSpinner.getValue());
-				server.setProtocol(prot);
+				handleStatusButtonClick(Protocol.CYCLE);
 			}
 
 		});
@@ -356,12 +378,7 @@ public class App extends Application {
 		// Add action when pressing the "set green" button
 		greenManBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				logger.info("Setting all selected clients green");
-				Protocol prot = new Protocol();
-				prot.setStatus(Protocol.GREEN);
-				prot.setIdList(getSelectedClientIds());
-				server.setProtocol(prot);
-
+				handleStatusButtonClick(Protocol.GREEN);
 			}
 
 		});
@@ -372,11 +389,7 @@ public class App extends Application {
 		yellowManBtn.setMaxWidth(Double.MAX_VALUE);
 		yellowManBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				logger.info("Setting all selected clients yellow");
-				Protocol prot = new Protocol();
-				prot.setStatus(Protocol.YELLOW);
-				prot.setIdList(getSelectedClientIds());
-				server.setProtocol(prot);
+				handleStatusButtonClick(Protocol.YELLOW);
 			}
 		});
 
@@ -386,25 +399,17 @@ public class App extends Application {
 		redManBtn.setMaxWidth(Double.MAX_VALUE);
 		redManBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				logger.info("Setting all selected clients red");
-				Protocol prot = new Protocol();
-				prot.setStatus(Protocol.RED);
-				prot.setIdList(getSelectedClientIds());
-				server.setProtocol(prot);
+				handleStatusButtonClick(Protocol.RED);
 			}
 		});
 
-		Label manBlinkYellowLabel = new Label("Blinking");
-		Button blinkManBtn = new Button("Set");
-		blinkManBtn.getStyleClass().add("button-set");
-		blinkManBtn.setMaxWidth(Double.MAX_VALUE);
-		blinkManBtn.setOnAction(new EventHandler<ActionEvent>() {
+		Label manBlinkYellowLabel = new Label("Flashing");
+		Button flashManBtn = new Button("Set");
+		flashManBtn.getStyleClass().add("button-set");
+		flashManBtn.setMaxWidth(Double.MAX_VALUE);
+		flashManBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				logger.info("Setting all selected clients flashing yellow");
-				Protocol prot = new Protocol();
-				prot.setStatus(Protocol.FLASHING);
-				prot.setIdList(getSelectedClientIds());
-				server.setProtocol(prot);
+				handleStatusButtonClick(Protocol.FLASHING);
 			}
 		});
 
@@ -415,11 +420,7 @@ public class App extends Application {
 		offManBtn.setMaxWidth(Double.MAX_VALUE);
 		offManBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				logger.info("Setting all selected clients to none");
-				Protocol prot = new Protocol();
-				prot.setStatus(Protocol.NONE);
-				prot.setIdList(getSelectedClientIds());
-				server.setProtocol(prot);
+				handleStatusButtonClick(Protocol.NONE);
 			}
 		});
 
@@ -455,7 +456,7 @@ public class App extends Application {
 		grid.add(redManBtn, 1, 11, 1, 1);
 
 		grid.add(manBlinkYellowLabel, 0, 12, 1, 1);
-		grid.add(blinkManBtn, 1, 12, 1, 1);
+		grid.add(flashManBtn, 1, 12, 1, 1);
 
 		grid.add(manOffLabel, 0, 13, 1, 1);
 		grid.add(offManBtn, 1, 13, 1, 1);
@@ -465,13 +466,51 @@ public class App extends Application {
 
 	public static List<Integer> getSelectedClientIds() {
 		List<Integer> clientIds = new ArrayList<Integer>();
-		for (Client client : clientList) {
-
+		for (MockClient client : mockClientList) {
+			logger.info("MockClient.isSelected: " + client.isSelected());
 			if (client.isSelected()) {
 				clientIds.add(client.getId());
 			}
 		}
 		return clientIds;
 
+	}
+
+	public static int addNewMockClient(MockClient client) {
+		int id = App.clientCounter;
+		client.idProperty().set(id);
+		mockClientList.add(client);
+		updateMockClientTable();
+		return id;
+	}
+
+	public static void updateMockClientTable() {
+		clientTable.setItems(mockClientList);
+		clientTable.refresh();
+	}
+
+	public static MockClient getMockClient(int id) {
+		for (MockClient client : mockClientList) {
+			if (client.getId() == id) {
+				return client;
+			}
+		}
+		return null;
+	}
+
+	private void handleStatusButtonClick(int status) {
+
+		logger.info("Setting all selected clients " + Protocol.statusToString(status));
+		Protocol prot = new Protocol();
+		prot.setStatus(status);
+		prot.setIdList(getSelectedClientIds());
+		if (status == Protocol.CYCLE) {
+			prot.setInterval(greenSpinner.getValue(), yellowSpinner.getValue(), redSpinner.getValue());
+		}
+		server.updateAllThreads(status, getSelectedClientIds());
+
+		// server.setProtocol(prot);
+
+		// lastAction = status;
 	}
 }

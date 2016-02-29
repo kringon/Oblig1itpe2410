@@ -21,7 +21,7 @@ public class ClientGUI {
 
 		stage = new Stage();
 
-		stage.setTitle("Client: " + App.clientCounter);
+		
 		StackPane root = new StackPane();
 
 		displayedImage = new ImageView(new Image(App.class.getResourceAsStream("graphics/" + "none" + ".png")));
@@ -29,6 +29,7 @@ public class ClientGUI {
 		displayedImage.setFitWidth(80);
 		root.getChildren().add(displayedImage);
 		client = new Client(Server.hostName, Server.portNumber, displayedImage, App.clientCounter++);
+		stage.setTitle("Client: " + App.clientCounter);
 		thread = new Thread(client);
 		thread.start();
 
@@ -44,8 +45,15 @@ public class ClientGUI {
 			public void handle(WindowEvent ev) {
 				System.out.println("closing");
 				thread.stop();
-				App.clientList.remove(client);
-				App.updateClientTable();
+				int index = -1;
+				for(int i = 0; i< App.mockClientList.size(); i++){
+					MockClient cli = App.mockClientList.get(i);
+					if(cli.getId() == client.getId()){
+						index = i;
+					}
+				}
+				App.mockClientList.remove(index);
+				App.updateMockClientTable();
 			}
 		});
 	}

@@ -3,6 +3,8 @@ package org.hioa.itpe;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ public class Server extends Task {
 	public static String hostName = "127.0.0.1";
 	public static ServerThread serverThread;
 	private static Logger logger = LoggerFactory.getLogger(Server.class);
+	private List<ServerThread> serverThreads = new ArrayList<ServerThread>();
 
 	@Override
 	protected Object call() throws Exception {
@@ -22,9 +25,9 @@ public class Server extends Task {
 
 		try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
 			while (listening) {
-				serverThread = new ServerThread(serverSocket.accept());
-				serverThread.start();
-				
+				ServerThread thread = new ServerThread(serverSocket.accept());
+				thread.start();
+				serverThreads.add(thread);			
 			}
 		} catch (IOException e) {
 			logger.error("Could not listen on port " + portNumber);
@@ -32,8 +35,15 @@ public class Server extends Task {
 		return null;
 	}
 	
+	// TODO: fix Protocol.
 	public void setProtocol(Protocol protocol) {
 		serverThread.setProtocol(protocol);
+	}
+
+	public void updateAllThreads(int status,List<Integer> clientIds){
+		for(ServerThread thread: serverThreads){
+			thread.printMessage(Protocol.produceMessage(status, clientIds));
+		}
 	}
 
 }

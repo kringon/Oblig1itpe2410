@@ -8,27 +8,49 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 
 public class ServerThread extends Thread {
+	
+	private int connectedClientId;
+	
 	private Socket socket = null;
 	private static Logger logger = LoggerFactory.getLogger(ServerThread.class);
 	private int lastPrintedAction;
+
 	private int lastProtocolId;
-	
+	// TODO: change to JSON from protocol
 	private Protocol protocol;
+
+	private PrintWriter out;
+
 
 	public ServerThread(Socket socket) {
 
 		super("ServerThread");
-		this.socket = socket;
-		lastPrintedAction = -1;
+		this.socket = socket;	
+		connectedClientId = -1;
 		protocol = new Protocol();
+		
+		// lastPrintedAction = -1;
 	}
 
 	public void run() {
 
 		while (true) {
+
 			try {
-				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-				
+
+				out = new PrintWriter(socket.getOutputStream(), true);
+				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				String inputLine = "";
+
+				while ((inputLine = in.readLine()) != null) {
+					logger.info("Getting info from client: " + inputLine);
+					String output = Protocol.processClientOutput(inputLine);
+					if (output.contains("Recieved connection, returning ID")) {
+						out.println(output);
+					}
+					
+				}
+				/*
 				if (lastProtocolId != protocol.getProtocolId()) {
 					String message = protocol.output();
 					
@@ -37,30 +59,35 @@ public class ServerThread extends Thread {
 						lastProtocolId = protocol.getProtocolId();
 					}
 				}
-					
-				
-				/*
-				if (lastPrintedAction != App.lastAction) {
-					String message = Protocol.produceMessage(App.lastAction, App.getSelectedClientIds());
-
-					if (!message.isEmpty()){
-						out.println(message);
-						lastPrintedAction = App.lastAction;
-					}
-						
-				}
 				*/
+				
+
+				// logger.info("lastPrintedAction: " + lastPrintedAction + "
+				// App.lastAction: " + App.lastAction);
+				// if (lastPrintedAction != App.lastAction) {
+				// String message = Protocol.produceMessage(App.lastAction,
+				// App.getSelectedClientIds());
+				// logger.info("Sending message to Client: " + message);
+				// if (!message.isEmpty()) {
+				// out.println(message);
+				// lastPrintedAction = App.lastAction;
+				// }
+				//
+				// }
 
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				logger.error("Could not connect to socket: ", e1.getLocalizedMessage());
 			}
 		}
 
 	}
-	
+	// TODO: remove
 	public void setProtocol(Protocol protocol) {
 		this.protocol = protocol;
+	}
+
+	public void printMessage(String message) {
+		out.println(message);
 	}
 
 }

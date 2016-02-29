@@ -4,10 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,22 +62,39 @@ public class Client extends Task {
 
 	@Override
 	protected Object call() throws Exception {
+
 		cycleTask = new LightCycleTask();
 		flashingTask = new LightFlashingTask();
 
 		while (!Thread.currentThread().isInterrupted()) {
-			try (Socket kkSocket = new Socket(ip.getValue(), port.getValue());
-					PrintWriter out = new PrintWriter(kkSocket.getOutputStream(), true);
-					BufferedReader in = new BufferedReader(new InputStreamReader(kkSocket.getInputStream()));) {
+
+			try (Socket socket = new Socket(ip.getValue(), port.getValue());
+					PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+					BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));) {
 
 				String fromServer;
+				ObjectMapper mapper = new ObjectMapper();
+
+				Message message = new Message(InetAddress.getLocalHost().getHostAddress(), port.getValue(),
+						"connecting to server, requesting ID");
+				out.println(mapper.writeValueAsString(message));
 
 				// Keep reading server output
 				while ((fromServer = in.readLine()) != null) {
 					logger.info("FromServer: " + fromServer);
-					// logger.info("In.readline: " + in.readLine());
+
+					int tempStatus = this.status;
 
 					updateFromServerJSON(fromServer);
+
+					// Status has changed depending on input from server
+					if (tempStatus != this.status) {
+						Message msg = new Message();
+						msg.setMessage("Status was updated");
+						msg.setStatus(this.status);
+						msg.setClientId(this.getId());
+						out.println(mapper.writeValueAsString(msg));
+					}
 
 				}
 			} catch (
@@ -104,47 +120,56 @@ public class Client extends Task {
 		Message message;
 		try {
 			message = mapper.readValue(fromServer, Message.class);
-			boolean inList = false;
-			for (Integer id : message.getIdList()) {
-				if (id.intValue() == this.getId()) {
-					inList = true;
+
+			if (message.getMessage() != null && message.getMessage().contains("Recieved connection, returning ID")) {
+
+				this.id.set(message.getClientId());
+			} else {
+
+				boolean inList = false;
+				for (Integer id : message.getIdList()) {
+					if (id.intValue() == this.getId()) {
+						inList = true;
+					}
+				}
+				if (inList) {
+					int statusFromServer = message.getStatus();
+					if (statusFromServer == Protocol.CYCLE) {
+						if (flashingTask.isAlive()) {
+							flashingTask.interrupt();
+						}
+						this.status = Protocol.CYCLE;
+						this.cycle = true;
+						this.greenInterval = message.getGreenInterval();
+						this.yellowInterval = message.getYellowInterval();
+						this.redInterval = message.getRedInterval();
+
+						cycleTask = new LightCycleTask();
+						cycleTask.start();
+					} else if (statusFromServer == Protocol.FLASHING) {
+						if (cycleTask.isAlive()) {
+							cycleTask.interrupt();
+						}
+						status = statusFromServer;
+
+						flashingTask = new LightFlashingTask();
+						flashingTask.start();
+
+					} else {
+						if (cycleTask.isAlive()) {
+							cycleTask.interrupt();
+						}
+						if (flashingTask.isAlive()) {
+							flashingTask.interrupt();
+						}
+						this.status = statusFromServer;
+						updateStatusMessage(0);
+						updateImage();
+					}
+
 				}
 			}
-			if (inList) {
-				int statusFromServer = message.getStatus();
-				if (statusFromServer == Protocol.CYCLE) {
-					if (flashingTask.isAlive()) {
-						flashingTask.interrupt();
-					}
-					this.status = Protocol.CYCLE;
-					this.cycle = true;
-					this.greenInterval = message.getGreenInterval();
-					this.yellowInterval = message.getYellowInterval();
-					this.redInterval = message.getRedInterval();
 
-					cycleTask = new LightCycleTask();
-					cycleTask.start();
-				} else if (statusFromServer == Protocol.FLASHING) {
-					if (cycleTask.isAlive()) {
-						cycleTask.interrupt();
-					}
-					status = statusFromServer;
-
-					flashingTask = new LightFlashingTask();
-					flashingTask.start();
-
-				} else {
-					if (cycleTask.isAlive()) {
-						cycleTask.interrupt();
-					}
-					if (flashingTask.isAlive()) {
-						flashingTask.interrupt();
-					}
-					this.status = statusFromServer;
-					updateStatusMessage(0);
-					updateImage();
-				}
-			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -160,37 +185,17 @@ public class Client extends Task {
 	}
 
 	private void updateStatusMessage(int remainingCycleTime) {
-		String message = statusToString(this.status);
+		String message = Protocol.statusToString(this.status);
 		if (cycle) {
 			message += " (" + remainingCycleTime + "s)";
 		}
 		setStatusMessage(message);
 	}
 
-	public String statusToString(int status) {
-		switch (status) {
-		case Protocol.NONE:
-			return "Standby";
-		case Protocol.GREEN:
-			return "Green";
-		case Protocol.YELLOW:
-			return "Yellow";
-		case Protocol.RED:
-			return "Red";
-		case Protocol.RED_YELLOW:
-			return "Red/Yellow";
-		case Protocol.FLASHING:
-			return "Flashing yellow";
-		case Protocol.CYCLE:
-			return "Cycle";
-		default:
-			return "Standby";
-		}
-	}
-
 	// Updates the displayed traffic light image (uses field variable)
 	public void updateImage() {
-		updateImage(status);
+		updateImage(this.status);
+
 	}
 
 	// Updates the displayed traffic light image (uses paramater variable)
@@ -247,8 +252,8 @@ public class Client extends Task {
 	public StringProperty statusProperty() {
 		return statusMessage;
 	}
-
-	class LightCycleTask extends Thread {
+	
+	private class LightCycleTask extends Thread {
 
 		@Override
 		public void run() {
@@ -279,7 +284,7 @@ public class Client extends Task {
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt(); 
+							Thread.currentThread().interrupt();
 							e.printStackTrace();
 							return;
 						}
@@ -296,7 +301,7 @@ public class Client extends Task {
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt(); 
+							Thread.currentThread().interrupt();
 							e.printStackTrace();
 							return;
 						}
@@ -313,7 +318,7 @@ public class Client extends Task {
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt(); 
+							Thread.currentThread().interrupt();
 							e.printStackTrace();
 							return;
 						}
@@ -327,7 +332,7 @@ public class Client extends Task {
 		}
 	}
 
-	class LightFlashingTask extends Thread {
+	private class LightFlashingTask extends Thread {
 
 		@Override
 		public void run() {
@@ -342,7 +347,7 @@ public class Client extends Task {
 						Thread.sleep(500);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
-						Thread.currentThread().interrupt(); 
+						Thread.currentThread().interrupt();
 						return;
 					}
 					yellowOn = false; // set local variable to indicate
@@ -353,7 +358,7 @@ public class Client extends Task {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt(); 
+						Thread.currentThread().interrupt();
 						e.printStackTrace();
 						return;
 					}
