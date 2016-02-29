@@ -52,7 +52,7 @@ public class ServerThread extends Thread {
 						if (output.contains("Recieved connection, returning ID")) {
 							// Store id of client:
 							Message msg2 = mapper.readValue(output, Message.class);
-							connectedClientId = msg.getClientId();
+							connectedClientId = msg2.getClientId();
 							// Send id to client:
 							out.println(output);
 						} else if (msg.getMessageType() == Message.SEND_STATUS_MSG) {
