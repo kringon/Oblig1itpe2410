@@ -19,6 +19,11 @@ public class Protocol {
 	public static final int RED_YELLOW = 4;
 	public static final int FLASHING = 5;
 	public static final int CYCLE = 6;
+	
+	private static int protocolIdCounter = 0;
+	private int protocolId;
+	
+
 
 	private int status;
 	private int greenInterval = 5;
@@ -26,11 +31,12 @@ public class Protocol {
 	private int redInterval = 5;
 	// private int intersection;
 
-	private ArrayList<Integer> idList;
+	private List<Integer> idList;
 
 	public Protocol() {
 		status = NONE;
 		idList = new ArrayList<Integer>();
+		protocolId = protocolIdCounter++;
 	}
 
 	// returns a JSON String
@@ -75,7 +81,7 @@ public class Protocol {
 		redInterval = red;
 	}
 
-	public void setIdList(ArrayList<Integer> idList) {
+	public void setIdList(List<Integer> idList) {
 		this.idList = idList;
 	}
 
@@ -100,6 +106,10 @@ public class Protocol {
 
 		return "failed to produce message";
 
+	}
+	
+	public int getProtocolId() {
+		return protocolId;
 	}
 
 }

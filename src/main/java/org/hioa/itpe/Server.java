@@ -22,13 +22,18 @@ public class Server extends Task {
 
 		try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
 			while (listening) {
-				new ServerThread(serverSocket.accept()).start();
+				serverThread = new ServerThread(serverSocket.accept());
+				serverThread.start();
 				
 			}
 		} catch (IOException e) {
 			logger.error("Could not listen on port " + portNumber);
 		}
 		return null;
+	}
+	
+	public void setProtocol(Protocol protocol) {
+		serverThread.setProtocol(protocol);
 	}
 
 }

@@ -8,6 +8,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.javafx.scene.control.skin.TableViewSkinBase;
+
 import javafx.application.Application;
 
 import javafx.collections.FXCollections;
@@ -256,6 +258,21 @@ public class App extends Application {
 
 		// Allow the columns to space out over the full size of the table.
 		clientTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		
+		Thread updateTableThread = new Thread() {
+			public void run() {
+				while (true) {
+					try {
+						sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					clientTable.getProperties().put(TableViewSkinBase.RECREATE, Boolean.TRUE);
+				}
+			}
+		};
+		updateTableThread.start();
 
 	}
 
@@ -287,27 +304,41 @@ public class App extends Application {
 		// spinner parameters
 		final int MIN = 1;
 		final int MAX = 60;
-		final int INITIAL = 30;
+		final int INITIAL_GREEN = 10;
+		final int INITIAL_YELLOW = 3;
+		final int INITIAL_RED = 10;
 		final int STEP = 1;
 
 		Label greenLabel = new Label("Green");
 		final Spinner<Integer> greenSpinner = new Spinner<Integer>();
-		greenSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL, STEP));
-		greenSpinner.setEditable(false);
+		greenSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL_GREEN, STEP));
+		greenSpinner.setEditable(true);
 
 		Label yellowLabel = new Label("Yellow");
 		final Spinner<Integer> yellowSpinner = new Spinner<Integer>();
-		yellowSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL, STEP));
-		yellowSpinner.setEditable(false);
+		yellowSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL_YELLOW, STEP));
+		yellowSpinner.setEditable(true);
 
 		Label redLabel = new Label("Red");
 		final Spinner<Integer> redSpinner = new Spinner<Integer>();
-		redSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL, STEP));
-		redSpinner.setEditable(false);
+		redSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN, MAX, INITIAL_RED, STEP));
+		redSpinner.setEditable(true);
 
 		Button startCycleBtn = new Button("Start Cycle");
 		startCycleBtn.getStyleClass().add("button-set");
 		startCycleBtn.setMaxWidth(Double.MAX_VALUE);
+		// Add action when pressing the "Start Cycle" button
+		startCycleBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				logger.info("Starting cycling for all selected clients.");
+				Protocol prot = new Protocol();
+				prot.setStatus(Protocol.CYCLE);
+				prot.setIdList(getSelectedClientIds());
+				prot.setInterval(greenSpinner.getValue(), yellowSpinner.getValue(), redSpinner.getValue());
+				server.setProtocol(prot);
+			}
+
+		});
 
 		// Manual options starts here.
 		Label manLabel = new Label("Manual");
@@ -326,7 +357,10 @@ public class App extends Application {
 		greenManBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
 				logger.info("Setting all selected clients green");
-				lastAction = Protocol.GREEN;
+				Protocol prot = new Protocol();
+				prot.setStatus(Protocol.GREEN);
+				prot.setIdList(getSelectedClientIds());
+				server.setProtocol(prot);
 
 			}
 
@@ -339,7 +373,10 @@ public class App extends Application {
 		yellowManBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
 				logger.info("Setting all selected clients yellow");
-				lastAction = Protocol.YELLOW;
+				Protocol prot = new Protocol();
+				prot.setStatus(Protocol.YELLOW);
+				prot.setIdList(getSelectedClientIds());
+				server.setProtocol(prot);
 			}
 		});
 
@@ -347,17 +384,44 @@ public class App extends Application {
 		Button redManBtn = new Button("Set");
 		redManBtn.getStyleClass().add("button-set");
 		redManBtn.setMaxWidth(Double.MAX_VALUE);
+		redManBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				logger.info("Setting all selected clients red");
+				Protocol prot = new Protocol();
+				prot.setStatus(Protocol.RED);
+				prot.setIdList(getSelectedClientIds());
+				server.setProtocol(prot);
+			}
+		});
 
 		Label manBlinkYellowLabel = new Label("Blinking");
 		Button blinkManBtn = new Button("Set");
 		blinkManBtn.getStyleClass().add("button-set");
 		blinkManBtn.setMaxWidth(Double.MAX_VALUE);
+		blinkManBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				logger.info("Setting all selected clients flashing yellow");
+				Protocol prot = new Protocol();
+				prot.setStatus(Protocol.FLASHING);
+				prot.setIdList(getSelectedClientIds());
+				server.setProtocol(prot);
+			}
+		});
 
 		Label manOffLabel = new Label("Off");
 
 		Button offManBtn = new Button("Set");
 		offManBtn.getStyleClass().add("button-set");
 		offManBtn.setMaxWidth(Double.MAX_VALUE);
+		offManBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				logger.info("Setting all selected clients to none");
+				Protocol prot = new Protocol();
+				prot.setStatus(Protocol.NONE);
+				prot.setIdList(getSelectedClientIds());
+				server.setProtocol(prot);
+			}
+		});
 
 		grid.add(ctrlLabel, 0, 0, 2, 1);
 		grid.add(autLabel, 0, 1, 2, 1);

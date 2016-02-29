@@ -11,12 +11,16 @@ public class ServerThread extends Thread {
 	private Socket socket = null;
 	private static Logger logger = LoggerFactory.getLogger(ServerThread.class);
 	private int lastPrintedAction;
+	private int lastProtocolId;
+	
+	private Protocol protocol;
 
 	public ServerThread(Socket socket) {
 
 		super("ServerThread");
 		this.socket = socket;
 		lastPrintedAction = -1;
+		protocol = new Protocol();
 	}
 
 	public void run() {
@@ -24,6 +28,18 @@ public class ServerThread extends Thread {
 		while (true) {
 			try {
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+				
+				if (lastProtocolId != protocol.getProtocolId()) {
+					String message = protocol.output();
+					
+					if (!message.isEmpty()){
+						out.println(message);
+						lastProtocolId = protocol.getProtocolId();
+					}
+				}
+					
+				
+				/*
 				if (lastPrintedAction != App.lastAction) {
 					String message = Protocol.produceMessage(App.lastAction, App.getSelectedClientIds());
 
@@ -33,6 +49,7 @@ public class ServerThread extends Thread {
 					}
 						
 				}
+				*/
 
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
@@ -40,6 +57,10 @@ public class ServerThread extends Thread {
 			}
 		}
 
+	}
+	
+	public void setProtocol(Protocol protocol) {
+		this.protocol = protocol;
 	}
 
 }
