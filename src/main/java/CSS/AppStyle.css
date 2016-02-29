@@ -15,30 +15,30 @@ and open the template in the editor.
     -fx-background-color: #FFFFFF ;
 }
 
-// applies to all labels
+/*applies to all labels */
 .label{
     -fx-text-fill:#484848    ;
 }
-// applies to control headline
+/* applies to control headline */
 .label-control{
     -fx-font-size: 20px;
     -fx-font-weight: bold;	 
     -fx-content-display:center
 }
-  //applies to interval and status labels
+  /* applies to interval and status labels */
 .label-interval{
     -fx-font-size: 14px;
     -fx-font-weight: bold;
     
 }
 
-//applies to labels cycle and manual
+/* applies to labels cycle and manual */
 .label-control-type{
     -fx-font-size: 18px;
     -fx-font-weight: bold;
 }
 
-// All the buttons in the controlpanel
+/* All the buttons in the controlpanel */
 .button-set{
     -fx-background-color: #C8C8C8 ;
     -fx-border-color: #C0C0C0;
@@ -54,7 +54,7 @@ and open the template in the editor.
     -fx-background-color: #660066;
 }
 
-// start server and start new client
+/* start server and start new client */
 .button-start{
     -fx-background-color: #660066;
     -fx-border-color:#808080 ;
@@ -71,5 +71,11 @@ and open the template in the editor.
     -fx-alignment: CENTER;
 
 }
+
+#mainPane  { /* */
+	-fx-alignment: CENTER;
+	-fx-padding: 30 30 30 30; /*top, right, bottom, left */
+}
+
 
 
