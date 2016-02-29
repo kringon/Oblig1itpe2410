@@ -11,19 +11,19 @@ import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Client extends Task {
+
+	private Socket socket;
+	private PrintWriter out;
+	private BufferedReader in;
+
 	private String ip;
 	private int port;
 	private boolean selected;
@@ -67,9 +67,10 @@ public class Client extends Task {
 
 		while (!Thread.currentThread().isInterrupted()) {
 
-			try (Socket socket = new Socket(ip, port);
-					PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-					BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));) {
+			try {
+				socket = new Socket(ip, port);
+				out = new PrintWriter(socket.getOutputStream(), true);
+				in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
 				String fromServer;
 				ObjectMapper mapper = new ObjectMapper();
@@ -160,7 +161,6 @@ public class Client extends Task {
 
 						flashingTask = new LightFlashingTask();
 						flashingTask.start();
-						
 
 					} else {
 						this.cycle = false;
@@ -187,13 +187,25 @@ public class Client extends Task {
 	public void setSelected(boolean selected) {
 		this.selected = selected;
 	}
-	
-	// Set status message:
+
+	// Send status message:
 	public void sendStatusToServer(String statusMessage) {
-		MockClient mock = App.getMockClient(id);
-		if (mock != null) {
-			mock.setStatusMessage(statusMessage);
-		}
+		ObjectMapper mapper = new ObjectMapper();
+
+		Message message = new Message();
+		message.setMessageType(Message.SEND_STATUS_MSG);
+		message.setIp(ip);
+		message.setPort(port);
+		message.setClientId(id);
+		message.setStatus(status);
+		message.setStatusMessage(statusMessage);
+		
+		try {
+			out.println(mapper.writeValueAsString(message));
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
 	}
 
 	private void updateStatusMessage(int remainingCycleTime) {
@@ -202,6 +214,7 @@ public class Client extends Task {
 			message += " (" + remainingCycleTime + "s)";
 		}
 		statusMessage = message;
+		sendStatusToServer(message);
 	}
 
 	// Updates the displayed traffic light image (uses field variable)
@@ -244,7 +257,7 @@ public class Client extends Task {
 	public int getStatus() {
 		return status;
 	}
-	
+
 	private class LightCycleTask extends Thread {
 
 		@Override
@@ -330,8 +343,9 @@ public class Client extends Task {
 		public void run() {
 
 			boolean yellowOn = false; // used by status: Flashing
+			updateStatusMessage(0);
 			while (!Thread.currentThread().isInterrupted()) {
-				updateStatusMessage(0);
+				
 				// Switch to NONE (if previous status = on)
 				if (yellowOn) {
 					updateImage(Protocol.NONE);

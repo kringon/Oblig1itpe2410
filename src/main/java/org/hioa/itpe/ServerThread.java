@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 
 public class ServerThread extends Thread {
-	
+
 	private int connectedClientId;
 
 	private Socket socket = null;
@@ -22,14 +22,13 @@ public class ServerThread extends Thread {
 
 	private PrintWriter out;
 
-
 	public ServerThread(Socket socket) {
 
 		super("ServerThread");
-		this.socket = socket;	
+		this.socket = socket;
 		connectedClientId = -1;
 		protocol = new Protocol();
-		
+
 		// lastPrintedAction = -1;
 	}
 
@@ -44,29 +43,34 @@ public class ServerThread extends Thread {
 				String inputLine = "";
 
 				while ((inputLine = in.readLine()) != null) {
+
 					logger.info("Getting info from client: " + inputLine);
 					String output = Protocol.processClientOutput(inputLine);
-					if (output.contains("Recieved connection, returning ID")) {
-						// Store id of client:
+					if (!inputLine.equals("")) {
 						ObjectMapper mapper = new ObjectMapper();
-						Message msg = mapper.readValue(output, Message.class);
-						connectedClientId = msg.getClientId();
-						// Send id to client:
-						out.println(output);
+						Message msg = mapper.readValue(inputLine, Message.class);
+						if (output.contains("Recieved connection, returning ID")) {
+							// Store id of client:
+							Message msg2 = mapper.readValue(output, Message.class);
+							connectedClientId = msg.getClientId();
+							// Send id to client:
+							out.println(output);
+						} else if (msg.getMessageType() == Message.SEND_STATUS_MSG) {
+							MockClient mock = App.getMockClient(msg.getClientId());
+							if (mock != null) {
+								mock.setStatusMessage(msg.getStatusMessage());
+							}
+						}
 					}
-					
+
 				}
 				/*
-				if (lastProtocolId != protocol.getProtocolId()) {
-					String message = protocol.output();
-					
-					if (!message.isEmpty()){
-						out.println(message);
-						lastProtocolId = protocol.getProtocolId();
-					}
-				}
-				*/
-				
+				 * if (lastProtocolId != protocol.getProtocolId()) { String
+				 * message = protocol.output();
+				 * 
+				 * if (!message.isEmpty()){ out.println(message); lastProtocolId
+				 * = protocol.getProtocolId(); } }
+				 */
 
 				// logger.info("lastPrintedAction: " + lastPrintedAction + "
 				// App.lastAction: " + App.lastAction);
@@ -87,8 +91,7 @@ public class ServerThread extends Thread {
 		}
 
 	}
-	
-	
+
 	public void updateProtocol(Protocol protocol) {
 		this.protocol = protocol;
 		out.println(protocol.output());
@@ -97,10 +100,9 @@ public class ServerThread extends Thread {
 	public void printMessage(String message) {
 		out.println(message);
 	}
-	
+
 	public int getConnectedClientId() {
 		return connectedClientId;
 	}
-	
 
 }
