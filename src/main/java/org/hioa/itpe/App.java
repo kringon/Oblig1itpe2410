@@ -23,6 +23,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TableColumn;
@@ -66,6 +68,8 @@ public class App extends Application {
 	private TableColumn<MockClient, Integer> idColumn;
 	// private TableColumn<MockClient, String> intersectColumn;
 	private TableColumn<MockClient, String> statusColumn;
+	
+	private ScrollPane clientTableScroll;
 
 	// Spinners for cycle interval:
 	private Spinner<Integer> greenSpinner;
@@ -231,15 +235,17 @@ public class App extends Application {
 
 		clientPane.add(clientsLabel, 0, 0);
 		clientPane.add(clientsDescription, 0, 1);
-		clientPane.add(clientTable, 0, 2);
+		clientPane.add(clientTableScroll, 0, 2);
 
 		return clientPane;
 	}
 
 	private void initClientTable() {
+		
+		
 		clientTable = new TableView<>();
 		clientTable.setEditable(false);
-		clientTable.setPrefSize(600, 400); // width, height
+		clientTable.setPrefSize(400, 400); // width, height
 
 		// Initialize columns with titles
 		chkboxColumn = new TableColumn<MockClient, Boolean>();
@@ -284,15 +290,22 @@ public class App extends Application {
 
 		// Allow the columns to space out over the full size of the table.
 		clientTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
+		
+		// Wrap TableView in ScrollPane to get scrollbar:
+		clientTableScroll = new ScrollPane();
+		clientTableScroll.setHbarPolicy(ScrollBarPolicy.NEVER); // Never show horizontal scrollbar
+		clientTableScroll.setVbarPolicy(ScrollBarPolicy.ALWAYS); // Always show vertical scrollbar
+		clientTableScroll.setContent(clientTable);
+		
+		// Start thread to refresh table every 1 second
 		Thread updateTableThread = new Thread() {
 			public void run() {
-				while (true) {
+				while (!Thread.currentThread().isInterrupted()) {
 					try {
 						sleep(1000);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						Thread.currentThread().interrupt();
+						return;
 					}
 					clientTable.getProperties().put(TableViewSkinBase.RECREATE, Boolean.TRUE); // refresh
 				}
@@ -500,7 +513,6 @@ public class App extends Application {
 	}
 
 	private void handleStatusButtonClick(int status) {
-
 		logger.info("Setting all selected clients " + Protocol.statusToString(status));
 		Protocol prot = new Protocol();
 		prot.setStatus(status);
@@ -508,10 +520,7 @@ public class App extends Application {
 		if (status == Protocol.CYCLE) {
 			prot.setInterval(greenSpinner.getValue(), yellowSpinner.getValue(), redSpinner.getValue());
 		}
-		server.updateAllThreads(status, getSelectedClientIds());
-
-		// server.setProtocol(prot);
-
+		server.updateAllThreads(prot);
 		// lastAction = status;
 	}
 }

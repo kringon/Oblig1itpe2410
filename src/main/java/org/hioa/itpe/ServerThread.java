@@ -88,9 +88,11 @@ public class ServerThread extends Thread {
 		}
 
 	}
-	// TODO: maybe remove
-	public void setProtocol(Protocol protocol) {
+	
+	
+	public void updateProtocol(Protocol protocol) {
 		this.protocol = protocol;
+		out.println(protocol.output());
 	}
 
 	public void printMessage(String message) {

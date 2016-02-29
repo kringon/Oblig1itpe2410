@@ -138,6 +138,9 @@ public class Client extends Task {
 						if (flashingTask.isAlive()) {
 							flashingTask.interrupt();
 						}
+						if (cycleTask.isAlive()) {
+							cycleTask.interrupt();
+						}
 						this.status = Protocol.CYCLE;
 						this.cycle = true;
 						this.greenInterval = message.getGreenInterval();
@@ -147,15 +150,21 @@ public class Client extends Task {
 						cycleTask = new LightCycleTask();
 						cycleTask.start();
 					} else if (statusFromServer == Protocol.FLASHING) {
+						this.cycle = false;
 						if (cycleTask.isAlive()) {
 							cycleTask.interrupt();
+						}
+						if (flashingTask.isAlive()) {
+							flashingTask.interrupt();
 						}
 						status = statusFromServer;
 
 						flashingTask = new LightFlashingTask();
 						flashingTask.start();
+						
 
 					} else {
+						this.cycle = false;
 						if (cycleTask.isAlive()) {
 							cycleTask.interrupt();
 						}
@@ -179,9 +188,13 @@ public class Client extends Task {
 	public void setSelected(boolean selected) {
 		this.selected.set(selected);
 	}
-
+	
+	// Set status message:
 	public void setStatusMessage(String statusMessage) {
-		this.statusMessage = new SimpleStringProperty(statusMessage);
+		MockClient mock = App.getMockClient(id.intValue());
+		if (mock != null) {
+			mock.setStatusMessage(statusMessage);
+		}
 	}
 
 	private void updateStatusMessage(int remainingCycleTime) {

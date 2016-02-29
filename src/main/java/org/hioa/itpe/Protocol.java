@@ -115,7 +115,7 @@ public class Protocol {
 		Message message = new Message();
 		ObjectMapper mapper = new ObjectMapper();
 		message.setIdList(clientIds);
-		try {
+		try { //Funker ikke message.setStatus(status) ganske greit her, eller bruker du også verdier untenfor 1-7? 
 			switch (status) {
 			case Protocol.GREEN:
 				message.setStatus(Protocol.GREEN);
