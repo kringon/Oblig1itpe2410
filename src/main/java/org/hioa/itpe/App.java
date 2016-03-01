@@ -2,6 +2,7 @@ package org.hioa.itpe;
 
 import javafx.event.EventHandler;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +69,8 @@ public class App extends Application {
 	private TableColumn<MockClient, String> statusColumn;
 	
 	private ScrollPane clientTableScroll;
+	
+	private Text serverIpText;
 
 	// Spinners for cycle interval:
 	private Spinner<Integer> greenSpinner;
@@ -150,9 +153,10 @@ public class App extends Application {
 		btnStart.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
 				logger.info("Starting server..");
-
+				
 				server = new Server();
 				new Thread(server).start();
+				serverIpText.setText("Server IP: " + server.getIpAddress() + " Port: " + server.portNumber);
 				btnStart.setDisable(true);
 				btnCreate.setDisable(false);
 
@@ -165,7 +169,7 @@ public class App extends Application {
 	}
 
 	/*
-	 * Uses a stack pane to create a help icon and adds it to the right side of
+	 * Uses a stack pane to add ip address of server to the right side of
 	 * an HBox
 	 * 
 	 * @param hb HBox to add the stack to
@@ -185,10 +189,14 @@ public class App extends Application {
 		helpText.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
 		helpText.setFill(Color.WHITE);
 		helpText.setStroke(Color.web("#7080A0"));
+		
+		serverIpText = new Text();
+		
+				
 
-		stack.getChildren().addAll(helpIcon, helpText);
+		stack.getChildren().add(serverIpText);
 		stack.setAlignment(Pos.CENTER_RIGHT);
-		// Add offset to right for question mark to compensate for RIGHT
+		// Add offset to right to compensate for RIGHT
 		// alignment of all nodes
 		StackPane.setMargin(helpText, new Insets(0, 10, 0, 0));
 

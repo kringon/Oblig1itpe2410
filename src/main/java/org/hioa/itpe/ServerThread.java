@@ -43,7 +43,7 @@ public class ServerThread extends Thread {
 				String inputLine = "";
 
 				while ((inputLine = in.readLine()) != null) {
-
+					
 					logger.info("Getting info from client: " + inputLine);
 					String output = Protocol.processClientOutput(inputLine);
 					if (!inputLine.equals("")) {

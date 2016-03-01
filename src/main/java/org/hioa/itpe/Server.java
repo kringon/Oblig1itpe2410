@@ -2,7 +2,9 @@ package org.hioa.itpe;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,10 +19,21 @@ public class Server extends Task {
 	public static ServerThread serverThread;
 	private static Logger logger = LoggerFactory.getLogger(Server.class);
 	private List<ServerThread> serverThreads = new ArrayList<ServerThread>();
-
+	
+	private String ipAddress;
+	
+	public Server() {
+		try {
+			ipAddress = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	protected Object call() throws Exception {
-
+		
 		boolean listening = true;
 
 		try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
@@ -64,6 +77,10 @@ public class Server extends Task {
 		for (ServerThread thread : serverThreads) {
 			thread.printMessage(message);
 		}
+	}
+	
+	public String getIpAddress() {
+		return ipAddress;
 	}
 
 }
