@@ -1,7 +1,10 @@
 package org.hioa.itpe;
 
+import java.io.File;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +36,7 @@ public class ClientConnectGUI {
 
 	private Label ipInvalidLabel;
 	private Label portInvalidLabel;
-	
+
 	private TextField ipField;
 	private TextField portField;
 
@@ -46,7 +49,15 @@ public class ClientConnectGUI {
 
 		Scene scene = new Scene(createGridPane(), 500, 180);
 		stage.setScene(scene);
-		scene.getStylesheets().add("/CSS/AppStyle.css");
+		File file = new File("src/main/resources/AppStyle.css");
+
+		try {
+			URL url = file.toURI().toURL();
+			scene.getStylesheets().add(url.toExternalForm());
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		stage.setTitle("Create Client");
 		stage.setResizable(false);
 		stage.show();
@@ -74,21 +85,17 @@ public class ClientConnectGUI {
 		ipField = new TextField(Server.hostName);
 		ipField.setPrefColumnCount(20);
 		/*
-		ipField.textProperty().addListener((observable, oldValue, newValue) -> {
-			if (!newValue.equals(oldValue) && !ipInvalidLabel.equals("")) {
-				ipInvalidLabel.setText("");
-			}
-		});
-		*/
+		 * ipField.textProperty().addListener((observable, oldValue, newValue)
+		 * -> { if (!newValue.equals(oldValue) && !ipInvalidLabel.equals("")) {
+		 * ipInvalidLabel.setText(""); } });
+		 */
 
 		portField = new TextField(Server.portNumber + "");
 		/*
-		portField.textProperty().addListener((observable, oldValue, newValue) -> {
-			if (!newValue.equals(oldValue) && !portInvalidLabel.equals("")) {
-				portInvalidLabel.setText("");
-			}
-		});
-		*/
+		 * portField.textProperty().addListener((observable, oldValue, newValue)
+		 * -> { if (!newValue.equals(oldValue) && !portInvalidLabel.equals(""))
+		 * { portInvalidLabel.setText(""); } });
+		 */
 
 		final CheckBox logCheckBox = new CheckBox();
 		Label checkBoxLabel = new Label("Open log on connect");
