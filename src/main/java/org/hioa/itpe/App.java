@@ -2,7 +2,10 @@ package org.hioa.itpe;
 
 import javafx.event.EventHandler;
 
+import java.io.File;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,7 +120,17 @@ public class App extends Application {
 		
 		Scene scene = new Scene(mainPane);
 		stage.setScene(scene);
-		scene.getStylesheets().add("/CSS/AppStyle.css");
+		
+		File file = new File("src/main/java/CSS/AppStyle.css");
+		
+		try {
+			URL url = file.toURI().toURL();
+			scene.getStylesheets().add(url.toExternalForm());
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		stage.setTitle("Traffic Light Control Center");
 		stage.show();
 
@@ -515,7 +528,7 @@ public class App extends Application {
 
 	public static void updateMockClientTable() {
 		clientTable.setItems(mockClientList);
-		clientTable.refresh();
+		//clientTable.refresh();
 	}
 
 	public static MockClient getMockClient(int id) {
