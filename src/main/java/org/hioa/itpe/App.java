@@ -528,7 +528,7 @@ public class App extends Application {
 
 	public static void updateMockClientTable() {
 		clientTable.setItems(mockClientList);
-		//clientTable.refresh();
+		clientTable.getProperties().put(TableViewSkinBase.RECREATE, Boolean.TRUE); // refresh
 	}
 
 	public static MockClient getMockClient(int id) {
