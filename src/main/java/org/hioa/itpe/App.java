@@ -121,7 +121,7 @@ public class App extends Application {
 		Scene scene = new Scene(mainPane);
 		stage.setScene(scene);
 		
-		File file = new File("src/main/java/CSS/AppStyle.css");
+		File file = new File("src/main/resources/AppStyle.css");
 		
 		try {
 			URL url = file.toURI().toURL();
