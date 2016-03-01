@@ -73,22 +73,22 @@ public class ClientConnectGUI {
 
 		ipField = new TextField(Server.hostName);
 		ipField.setPrefColumnCount(20);
-		/*
+		
 		ipField.textProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue.equals(oldValue) && !ipInvalidLabel.equals("")) {
 				ipInvalidLabel.setText("");
 			}
 		});
-		*/
+		
 
 		portField = new TextField(Server.portNumber + "");
-		/*
+		
 		portField.textProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue.equals(oldValue) && !portInvalidLabel.equals("")) {
 				portInvalidLabel.setText("");
 			}
 		});
-		*/
+		
 
 		final CheckBox logCheckBox = new CheckBox();
 		Label checkBoxLabel = new Label("Open log on connect");
