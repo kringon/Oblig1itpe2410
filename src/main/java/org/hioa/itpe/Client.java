@@ -47,11 +47,10 @@ public class Client extends Task {
 	private LightCycleTask cycleTask;
 	private LightFlashingTask flashingTask;
 
-	public Client(String ip, int port, ImageView dispImage, int id, ClientGUI clientGUI) {
+	public Client(String ip, int port, ImageView dispImage, ClientGUI clientGUI) {
 		this.ip = ip;
 		this.port = port;
 		this.displayedImage = dispImage;
-		this.id = id;
 		this.statusMessage = "Standby";
 
 		this.status = 0;
@@ -62,6 +61,7 @@ public class Client extends Task {
 		this.redInterval = 0;
 		
 		this.clientGUI = clientGUI;
+		id = -1; // updated in updateFromServerJSON(String fromServer) method.
 
 	}
 
@@ -138,7 +138,15 @@ public class Client extends Task {
 
 			if (message.getMessage() != null && message.getMessage().contains("Recieved connection, returning ID")) {
 
-				this.id = message.getClientId();
+				this.id = message.getClientId(); // Client now has id.
+				// Update title of Client GUI with id:
+				Platform.runLater(new Runnable() {
+			        public void run() {
+			        	clientGUI.getStage().setTitle("Client: " + id);
+			        }
+			    });
+				
+				
 			} else {
 
 				boolean inList = false;

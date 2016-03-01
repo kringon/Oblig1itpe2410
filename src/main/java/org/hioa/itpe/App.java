@@ -76,7 +76,7 @@ public class App extends Application {
 
 	private static Logger logger = LoggerFactory.getLogger(App.class);
 	private Server server;
-	public static int clientCounter = 0;
+	public static int clientCounter = 1;
 	public static int serverCounter = 0;
 	public static ObservableList<MockClient> mockClientList;
 	// public static int lastAction = Protocol.NONE;
@@ -498,7 +498,7 @@ public class App extends Application {
 	}
 
 	public static int addNewMockClient(MockClient client) {
-		int id = App.clientCounter;
+		int id = App.clientCounter++;
 		client.idProperty().set(id);
 		mockClientList.add(client);
 		updateMockClientTable();

@@ -24,18 +24,17 @@ public class ClientGUI {
 		
 		StackPane root = new StackPane();
 
-		displayedImage = new ImageView(new Image(App.class.getResourceAsStream("graphics/" + "none" + ".png")));
+		displayedImage = new ImageView(new Image(ClientGUI.class.getResourceAsStream("graphics/" + "none" + ".png")));
 		displayedImage.setPreserveRatio(true);
 		displayedImage.setFitWidth(80);
 		root.getChildren().add(displayedImage);
-		client = new Client(hostIp, hostPort, displayedImage, App.clientCounter++, this);
-		stage.setTitle("Client: " + App.clientCounter);
+		client = new Client(hostIp, hostPort, displayedImage, this);
+		stage.setTitle("Client: (Waiting for id)");
 		thread = new Thread(client);
 		thread.start();
 
 		stage.setScene(new Scene(root, 300, 250));
 		stage.show();
-
 		setOnCloseRequest();
 
 	}
