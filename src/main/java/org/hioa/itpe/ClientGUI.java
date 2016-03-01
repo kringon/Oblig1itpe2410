@@ -1,5 +1,6 @@
 package org.hioa.itpe;
 
+import java.io.File;
 import java.net.Socket;
 
 import javafx.event.EventHandler;
@@ -24,7 +25,7 @@ public class ClientGUI {
 		
 		StackPane root = new StackPane();
 
-		displayedImage = new ImageView(new Image(ClientGUI.class.getResourceAsStream("graphics/" + "none" + ".png")));
+		displayedImage = new ImageView(new Image(new File("src/main/resources/none.png").toURI().toString()));
 		displayedImage.setPreserveRatio(true);
 		displayedImage.setFitWidth(80);
 		root.getChildren().add(displayedImage);

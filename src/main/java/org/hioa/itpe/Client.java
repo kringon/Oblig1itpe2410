@@ -1,6 +1,7 @@
 package org.hioa.itpe;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -248,16 +249,17 @@ public class Client extends Task {
 
 	// Updates the displayed traffic light image (uses paramater variable)
 	public void updateImage(int status) {
+		
 		if (status == Protocol.GREEN) {
-			displayedImage.setImage(new Image(Client.class.getResourceAsStream("graphics/green.png")));
+			displayedImage.setImage(new Image(new File("src/main/resources/green.png").toURI().toString()));
 		} else if (status == Protocol.RED) {
-			displayedImage.setImage(new Image(Client.class.getResourceAsStream("graphics/red.png")));
+			displayedImage.setImage(new Image(new File("src/main/resources/red.png").toURI().toString()));
 		} else if (status == Protocol.RED_YELLOW) {
-			displayedImage.setImage(new Image(Client.class.getResourceAsStream("graphics/red_yellow.png")));
+			displayedImage.setImage(new Image(new File("src/main/resources/red_yellow.png").toURI().toString()));
 		} else if (status == Protocol.YELLOW) {
-			displayedImage.setImage(new Image(Client.class.getResourceAsStream("graphics/yellow.png")));
+			displayedImage.setImage(new Image(new File("src/main/resources/yellow.png").toURI().toString()));
 		} else {
-			displayedImage.setImage(new Image(Client.class.getResourceAsStream("graphics/none.png")));
+			displayedImage.setImage(new Image(new File("src/main/resources/none.png").toURI().toString()));
 		}
 	}
 
