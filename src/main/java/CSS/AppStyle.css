@@ -72,9 +72,10 @@ and open the template in the editor.
 
 }
 
-#mainPane  { /* */
-	-fx-alignment: CENTER;
-	-fx-padding: 30 30 30 30; /*top, right, bottom, left */
+#contentPane  { /* */
+	-fx-alignment: TOP_CENTER;
+	-fx-padding: 10 12 12 12; /*top, right, bottom, left */
+	-fx-background-color:rgb(233,233,233)
 }
 
 

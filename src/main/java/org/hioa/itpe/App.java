@@ -53,9 +53,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
- * Sample application that shows examples of the different layout panes provided
- * by the JavaFX layout API. The resulting UI is for demonstration purposes only
- * and is not interactive.
+ * 
  */
 
 public class App extends Application {
@@ -95,28 +93,29 @@ public class App extends Application {
 	public void start(Stage stage) {
 
 		// Use a border pane as the root for scene
-		BorderPane border = new BorderPane();
+		BorderPane mainPane = new BorderPane();
+		
+		BorderPane contentPane = new BorderPane(); // if changed to gridpane, remember to remove padding in existing addGridPane()
+		contentPane.setId("contentPane");
 
 		HBox hbox = addHBox();
-		border.setTop(hbox);
+		mainPane.setTop(hbox);
 		
 		mockClientList = FXCollections.observableArrayList();
 		// Create clientPane and place in border pane:
-		border.setLeft(addClientPane());
+		contentPane.setLeft(addClientPane());
 		initColumnsSize();
 
 		// Add a stack to the HBox in the top region
 		addStackPane(hbox);
 
-		GridPane centerGrid = new GridPane();
-		centerGrid.setMinSize(768, 1024);
-		// border.setCenter(centerGrid);
-		border.setRight(addGridPane());
-
-		Scene scene = new Scene(border);
+		contentPane.setRight(addGridPane());
+		mainPane.setCenter(contentPane);
+		
+		Scene scene = new Scene(mainPane);
 		stage.setScene(scene);
 		scene.getStylesheets().add("/CSS/AppStyle.css");
-		stage.setTitle("Traffic light control ");
+		stage.setTitle("Traffic Light Control Center");
 		stage.show();
 
 	}
@@ -132,13 +131,14 @@ public class App extends Application {
 		hbox.getStyleClass().add("hbox");
 
 		final Button btnCreate = new Button("Create Client");
-		btnCreate.setDisable(true);
+		btnCreate.setDisable(false);
 		btnCreate.setPrefSize(100, 20);
 		btnCreate.getStyleClass().add("button-start");
+		final App thisApp = this; // Reference to this running instance. Easier getting it her than from inside EventHandler
 		btnCreate.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				logger.info("Creating new client: " + clientCounter);
-				ClientGUI gui = new ClientGUI();
+				logger.info("Opening up Client Connect window.");
+				ClientConnectGUI clientConnectGui = new ClientConnectGUI(thisApp);
 			}
 
 		});
@@ -159,7 +159,7 @@ public class App extends Application {
 			}
 		});
 
-		hbox.getChildren().addAll(btnCreate, btnStart);
+		hbox.getChildren().addAll(btnStart, btnCreate);
 
 		return hbox;
 	}
@@ -228,8 +228,9 @@ public class App extends Application {
 		GridPane clientPane = new GridPane();
 
 		Label clientsLabel = new Label("Clients");
+		clientsLabel.getStyleClass().add("label-control");
 		Label clientsDescription = new Label("Select clients to control");
-		clientsDescription.getStyleClass().add("label-control");
+		// clientsDescription.getStyleClass().add("");
 
 		initClientTable();
 
@@ -250,7 +251,7 @@ public class App extends Application {
 		// Initialize columns with titles
 		chkboxColumn = new TableColumn<MockClient, Boolean>();
 		// Header CheckBox
-		CheckBox cb = new CheckBox();
+		final CheckBox cb = new CheckBox();
 		cb.setUserData(this.chkboxColumn);
 		// cb.setOnAction(handleSelectAllCheckbox());
 		cb.setOnAction(new EventHandler<ActionEvent>() {
@@ -301,6 +302,11 @@ public class App extends Application {
 		Thread updateTableThread = new Thread() {
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
+					/*
+					while (!activeCycles) { // Example: ServerThread sends a notification to a method in this class everytime it receives a cycle status message. The method in this class checks the time between previous and current notification and if greater than say 2 seconds, this thread is set to wait. If a new notification is recieved this thread is notified again. 
+						wait();
+					}
+					*/
 					try {
 						sleep(1000);
 					} catch (InterruptedException e) {
@@ -326,11 +332,12 @@ public class App extends Application {
 	private GridPane addGridPane() {
 
 		GridPane grid = new GridPane();
-		grid.setHgap(10);
+		grid.setHgap(5);
 		grid.setVgap(12);
 
-		// Padding arround entire grid to create space
-		grid.setPadding(new Insets(0, 10, 10, 10));
+		// Padding on the left to create space between this and the tablepane which are placed
+		// besides each other in a borderpane: (alt: use gridPane)
+		grid.setPadding(new Insets(0, 0, 0, 20));
 
 		Label ctrlLabel = new Label("Control Panel");
 		ctrlLabel.getStyleClass().add("label-control");

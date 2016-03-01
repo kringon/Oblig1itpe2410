@@ -14,15 +14,19 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.stage.Stage;
 
 public class Client extends Task {
 
 	private Socket socket;
 	private PrintWriter out;
 	private BufferedReader in;
+	
+	private ClientGUI clientGUI;
 
 	private String ip;
 	private int port;
@@ -43,7 +47,7 @@ public class Client extends Task {
 	private LightCycleTask cycleTask;
 	private LightFlashingTask flashingTask;
 
-	public Client(String ip, int port, ImageView dispImage, int id) {
+	public Client(String ip, int port, ImageView dispImage, int id, ClientGUI clientGUI) {
 		this.ip = ip;
 		this.port = port;
 		this.displayedImage = dispImage;
@@ -56,6 +60,8 @@ public class Client extends Task {
 		this.greenInterval = 0;
 		this.yellowInterval = 0;
 		this.redInterval = 0;
+		
+		this.clientGUI = clientGUI;
 
 	}
 
@@ -97,14 +103,23 @@ public class Client extends Task {
 					}
 
 				}
-			} catch (
-
-			UnknownHostException e) {
-				System.err.println("Don't know about host " + ip);
-				System.exit(1);
+			} catch (UnknownHostException e) {
+				logger.info("Don't know about host " + ip);
+				Platform.runLater(new Runnable() {
+			        public void run() {
+			        	clientGUI.getStage().close(); // close "parent" clientGUI
+			        }
+			    });
+				this.cancel(); // cancel this thread
 			} catch (IOException e) {
-				System.err.println("Couldn't get I/O for the connection to " + ip);
-				System.exit(1);
+				logger.info("Couldn't get I/O for the connection to " + ip);
+				
+				Platform.runLater(new Runnable() {
+			        public void run() {
+			        	clientGUI.getStage().close(); // close "parent" clientGUI
+			        }
+			    });
+				this.cancel(); // cancel this thread
 			}
 
 		}

@@ -17,7 +17,7 @@ public class ClientGUI {
 	private final Client client;
 	private Thread thread;
 
-	public ClientGUI() {
+	public ClientGUI(String hostIp, int hostPort) {
 
 		stage = new Stage();
 
@@ -28,7 +28,7 @@ public class ClientGUI {
 		displayedImage.setPreserveRatio(true);
 		displayedImage.setFitWidth(80);
 		root.getChildren().add(displayedImage);
-		client = new Client(Server.hostName, Server.portNumber, displayedImage, App.clientCounter++);
+		client = new Client(hostIp, hostPort, displayedImage, App.clientCounter++, this);
 		stage.setTitle("Client: " + App.clientCounter);
 		thread = new Thread(client);
 		thread.start();
@@ -52,14 +52,20 @@ public class ClientGUI {
 						index = i;
 					}
 				}
-				App.mockClientList.remove(index);
-				App.updateMockClientTable();
+				if (index != -1) {
+					App.mockClientList.remove(index);
+					App.updateMockClientTable();
+				}
 			}
 		});
 	}
 
 	public Client getClient() {
 		return this.client;
+	}
+	
+	public Stage getStage() {
+		return this.stage;
 	}
 
 }
