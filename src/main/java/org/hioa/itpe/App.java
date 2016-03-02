@@ -169,7 +169,10 @@ public class App extends Application {
 				
 				server = new Server();
 				new Thread(server).start();
-				serverIpText.setText("Server IP: " + server.getIpAddress() + " Port: " + server.portNumber);
+				//TODO: Change this to two textfields which blends with background and has a listener that will copy address
+				// to clipboard when clicked.
+				serverIpText.setText("Server Local IP: " + server.getIpAddress() + " Port: " + server.portNumber + "\n" +
+									"Server External IP: " + Protocol.getExternalIp() + " Port: " + server.portNumber);
 				btnStart.setDisable(true);
 				btnCreate.setDisable(false);
 
@@ -190,19 +193,6 @@ public class App extends Application {
 	private void addStackPane(HBox hb) {
 
 		StackPane stack = new StackPane();
-		Rectangle helpIcon = new Rectangle(30.0, 25.0);
-		helpIcon.setFill(new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE,
-				new Stop[] { new Stop(0, Color.web("#4977A3")), new Stop(0.5, Color.web("#B0C6DA")),
-						new Stop(1, Color.web("#9CB6CF")), }));
-		helpIcon.setStroke(Color.web("#D0E6FA"));
-		helpIcon.setArcHeight(3.5);
-		helpIcon.setArcWidth(3.5);
-
-		Text helpText = new Text("?");
-		helpText.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
-		helpText.setFill(Color.WHITE);
-		helpText.setStroke(Color.web("#7080A0"));
-		
 		serverIpText = new Text();
 		
 				
@@ -211,7 +201,7 @@ public class App extends Application {
 		stack.setAlignment(Pos.CENTER_RIGHT);
 		// Add offset to right to compensate for RIGHT
 		// alignment of all nodes
-		StackPane.setMargin(helpText, new Insets(0, 10, 0, 0));
+		StackPane.setMargin(serverIpText, new Insets(0, 10, 0, 0));
 
 		hb.getChildren().add(stack);
 		HBox.setHgrow(stack, Priority.ALWAYS);

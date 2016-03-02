@@ -1,6 +1,10 @@
 package org.hioa.itpe;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -169,6 +173,29 @@ public class Protocol {
 		default:
 			return "Standby";
 		}
+	}
+	
+	public static String getExternalIp() {
+		URL whatismyip;
+		String ip;
+		try {
+			whatismyip = new URL("http://checkip.amazonaws.com");
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+			                whatismyip.openStream()));
+
+
+		ip = in.readLine(); // ip as String
+		return ip;
+		
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "";
+		
 	}
 
 }
