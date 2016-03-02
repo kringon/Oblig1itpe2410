@@ -169,7 +169,8 @@ public class App extends Application {
 				
 				server = new Server();
 				new Thread(server).start();
-				serverIpText.setText("Server IP: " + server.getIpAddress() + " Port: " + server.portNumber);
+				String ip = Protocol.getExternalIp();
+				serverIpText.setText("Server IP: " + ip + " Port: " + server.portNumber);
 				btnStart.setDisable(true);
 				btnCreate.setDisable(false);
 

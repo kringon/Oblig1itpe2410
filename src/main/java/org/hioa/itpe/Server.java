@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import javafx.concurrent.Task;
 
 public class Server extends Task {
-	public static int portNumber = 8080;
+	public static int portNumber = 9999;
 	public static String hostName = "127.0.0.1";
 	public static ServerThread serverThread;
 	private static Logger logger = LoggerFactory.getLogger(Server.class);
@@ -23,12 +23,15 @@ public class Server extends Task {
 	private String ipAddress;
 	
 	public Server() {
+		ipAddress = Protocol.getExternalIp();
+		/*
 		try {
 			ipAddress = InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		*/
 	}
 	
 	@Override

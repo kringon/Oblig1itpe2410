@@ -130,6 +130,7 @@ public class Client extends Task {
 		return null;
 	}
 
+	
 	public void updateFromServerJSON(String fromServer) {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -218,8 +219,6 @@ public class Client extends Task {
 
 		Message message = new Message();
 		message.setMessageType(Message.SEND_STATUS_MSG);
-		message.setIp(ip);
-		message.setPort(port);
 		message.setClientId(id);
 		message.setStatus(status);
 		message.setStatusMessage(statusMessage);
