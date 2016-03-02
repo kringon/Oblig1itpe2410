@@ -129,6 +129,15 @@ public class Client extends Task {
 
 		return null;
 	}
+	
+	public void closeSocket() {
+		try {
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	public void updateFromServerJSON(String fromServer) {
 

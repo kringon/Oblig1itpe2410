@@ -45,6 +45,7 @@ public class ClientGUI {
 			public void handle(WindowEvent ev) {
 				System.out.println("closing");
 				thread.interrupt();
+				client.closeSocket();
 				int index = -1;
 				for(int i = 0; i< App.mockClientList.size(); i++){
 					MockClient cli = App.mockClientList.get(i);
