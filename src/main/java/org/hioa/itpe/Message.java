@@ -4,22 +4,21 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Message {
-	private int messageId; // Instead of using lastAction. May not be necessary now?
-	
+	private int messageId; // Instead of using lastAction. May not be necessary
+							// now?
+
 	private int messageType;
 
 	public static int REQUEST_ID_MSG = 1;
 	public static int SEND_STATUS_MSG = 2;
 	public static int DISCONNECT_MSG = 3;
-	
+
 	private List<Integer> idList;
 	// private String status;
 	private int status;
 	private String statusMessage;
-
 
 	private int greenInterval;
 	private int yellowInterval;
@@ -40,12 +39,18 @@ public class Message {
 		this.setPort(port);
 		this.setMessage(message);
 	}
-	
+
+	public Message(String ip, int port) {
+		this.setIp(ip);
+		this.setPort(port);
+
+	}
+
 	public Message(List<Integer> idList, int status) {
 		this.idList = idList;
 		this.status = status;
 	}
-	
+
 	public Message(List<Integer> idList, int status, int greenInterval, int yellowInterval, int redInterval) {
 		this.idList = idList;
 		this.status = status;
@@ -130,7 +135,7 @@ public class Message {
 	public void setClientId(int clientId) {
 		this.clientId = clientId;
 	}
-	
+
 	public String getStatusMessage() {
 		return statusMessage;
 	}
@@ -138,7 +143,7 @@ public class Message {
 	public void setStatusMessage(String statusMessage) {
 		this.statusMessage = statusMessage;
 	}
-	
+
 	public int getMessageType() {
 		return messageType;
 	}

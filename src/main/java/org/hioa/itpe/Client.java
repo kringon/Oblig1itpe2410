@@ -26,7 +26,7 @@ public class Client extends Task {
 	private Socket socket;
 	private PrintWriter out;
 	private BufferedReader in;
-	
+	private ObjectMapper mapper; 
 	private ClientGUI clientGUI;
 
 	private String ip;
@@ -63,7 +63,7 @@ public class Client extends Task {
 		
 		this.clientGUI = clientGUI;
 		id = -1; // updated in updateFromServerJSON(String fromServer) method.
-
+		mapper = new ObjectMapper();
 	}
 
 	@Override
@@ -82,8 +82,8 @@ public class Client extends Task {
 				String fromServer;
 				ObjectMapper mapper = new ObjectMapper();
 
-				Message message = new Message(InetAddress.getLocalHost().getHostAddress(), port,
-						"connecting to server, requesting ID");
+				Message message = new Message(InetAddress.getLocalHost().getHostAddress(), port);
+				message.setMessageType(Message.REQUEST_ID_MSG);
 				out.println(mapper.writeValueAsString(message));
 
 				// Keep reading server output
@@ -131,7 +131,13 @@ public class Client extends Task {
 	}
 	
 	public void closeSocket() {
-		try {
+		try { 
+			
+			Message msg = new Message();
+			msg.setMessageType(Message.DISCONNECT_MSG);
+			msg.setClientId(this.getId());
+			out.println(mapper.writeValueAsString(msg));
+			socket.shutdownOutput();
 			socket.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

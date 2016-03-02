@@ -21,7 +21,7 @@ public class ServerThread extends Thread {
 	private Protocol protocol;
 
 	private PrintWriter out;
-	
+
 	private volatile boolean running;
 
 	public ServerThread(Socket socket) {
@@ -36,8 +36,8 @@ public class ServerThread extends Thread {
 	}
 
 	public void run() {
-		
-		while(!Thread.currentThread().isInterrupted()) {
+
+		while (!Thread.currentThread().isInterrupted()) {
 
 			try {
 
@@ -52,7 +52,7 @@ public class ServerThread extends Thread {
 					if (!inputLine.equals("")) {
 						ObjectMapper mapper = new ObjectMapper();
 						Message msg = mapper.readValue(inputLine, Message.class);
-						if (output.contains("Recieved connection, returning ID")) {
+						if (msg.getMessageType() == Message.REQUEST_ID_MSG) {
 							// Store id of client:
 							Message msg2 = mapper.readValue(output, Message.class);
 							connectedClientId = msg2.getClientId();
@@ -63,26 +63,19 @@ public class ServerThread extends Thread {
 							if (mock != null) {
 								mock.setStatusMessage(msg.getStatusMessage());
 							}
+						} else if (msg.getMessageType() == Message.DISCONNECT_MSG) {
+							logger.info("Removing mockclient from list");
+							closeThread();
+							logger.info("Closed socket");
+							// running = false;
 						}
 					}
-					
+
 					if (socket.getInputStream().read() == -1) {
-						logger.info("Removing mockclient from list");
-						int index = -1;
-						for (int i = 0; i < App.mockClientList.size(); i++) {
-							MockClient cli = App.mockClientList.get(i);
-							if (cli.getId() == connectedClientId) {
-								index = i;
-							}
-						}
-						if (index != -1) {
-							App.mockClientList.remove(index);
-							App.updateMockClientTable();
-						}
-						logger.info("Closing socket");
-						socket.close();
-						this.interrupt();
-						//running = false;
+						logger.warn("Connection closed abbruptly");
+						closeThread();
+						logger.warn("Socket was terminated successfully");
+						// running = false;
 					}
 
 				}
@@ -106,7 +99,7 @@ public class ServerThread extends Thread {
 				// }
 				//
 				// }
-				
+
 			} catch (IOException e1) {
 				logger.error("Could not connect to socket: ", e1.getLocalizedMessage());
 			}
@@ -125,6 +118,23 @@ public class ServerThread extends Thread {
 
 	public int getConnectedClientId() {
 		return connectedClientId;
+	}
+
+	private void closeThread() throws IOException {
+		int index = -1;
+		for (int i = 0; i < App.mockClientList.size(); i++) {
+			MockClient cli = App.mockClientList.get(i);
+			if (cli.getId() == connectedClientId) {
+				index = i;
+			}
+		}
+		if (index != -1) {
+			App.mockClientList.remove(index);
+			App.updateMockClientTable();
+
+			socket.close();
+			this.interrupt();
+		}
 	}
 
 }
