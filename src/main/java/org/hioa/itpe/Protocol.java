@@ -91,35 +91,39 @@ public class Protocol {
 		this.idList = idList;
 	}
 
-	public static String processClientOutput(String message)
-			throws JsonParseException, JsonMappingException, IOException {
-		if (message.contains("connecting to server, requesting ID")) {
-			ObjectMapper mapper = new ObjectMapper();
+	public static Message processClientOutput(Message message) {
 
-			Message msg = mapper.readValue(message, Message.class);
-
-			int id = App.addNewMockClient(new MockClient(msg.getIp(), msg.getPort()));
-			msg = new Message();
-			msg.setMessage("Recieved connection, returning ID: " + id);
+	
+		
+		if (message.getMessageType() == Message.REQUEST_ID) {
+			Message msg = new Message();
+			int id = App.addNewMockClient(new MockClient(message.getIp(), message.getPort()));
+			
+			msg.setMessageType(Message.ACCEPT_ID_REQUEST);
 			msg.setClientId(id);
+			return msg;
 
-			return mapper.writeValueAsString(msg);
-
-		} else if (message.contains("Status was updated")) {
-			logger.info("status was updated");
-			ObjectMapper mapper = new ObjectMapper();
-			Message msg = mapper.readValue(message, Message.class);
-			App.getMockClient(msg.getClientId()).setStatusMessage(Protocol.statusToString(msg.getStatus()));
-			App.updateMockClientTable();
+		} else if (message.getMessageType() == Message.SEND_STATUS) {
+			MockClient mock = App.getMockClient(message.getClientId());
+			if (mock != null) {
+				mock.setStatusMessage(message.getStatusMessage());
+				App.updateMockClientTable();
+			}
+		} else if (message.getMessageType() == Message.DISCONNECT) {
+			Message msg = new Message();
+			msg.setMessageType(Message.DISCONNECT);
+			msg.setClientId(message.getClientId());
+			return msg;
 		}
-		return "";
+		return null;
 	}
 
 	public static String produceMessage(int status, List<Integer> clientIds) {
 		Message message = new Message();
 		ObjectMapper mapper = new ObjectMapper();
 		message.setIdList(clientIds);
-		try { //Funker ikke message.setStatus(status) ganske greit her, eller bruker du også verdier untenfor 1-7? 
+		try { // Funker ikke message.setStatus(status) ganske greit her, eller
+				// bruker du også verdier untenfor 1-7?
 			switch (status) {
 			case Protocol.GREEN:
 				message.setStatus(Protocol.GREEN);
@@ -174,19 +178,17 @@ public class Protocol {
 			return "Standby";
 		}
 	}
-	
+
 	public static String getExternalIp() {
 		URL whatismyip;
 		String ip;
 		try {
 			whatismyip = new URL("http://checkip.amazonaws.com");
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-			                whatismyip.openStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
 
+			ip = in.readLine(); // ip as String
+			return ip;
 
-		ip = in.readLine(); // ip as String
-		return ip;
-		
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -195,7 +197,7 @@ public class Protocol {
 			e.printStackTrace();
 		}
 		return "";
-		
+
 	}
 
 }

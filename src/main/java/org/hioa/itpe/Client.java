@@ -83,7 +83,7 @@ public class Client extends Task {
 				ObjectMapper mapper = new ObjectMapper();
 
 				Message message = new Message(InetAddress.getLocalHost().getHostAddress(), port);
-				message.setMessageType(Message.REQUEST_ID_MSG);
+				message.setMessageType(Message.REQUEST_ID);
 				out.println(mapper.writeValueAsString(message));
 
 				// Keep reading server output
@@ -98,9 +98,12 @@ public class Client extends Task {
 					if (tempStatus != this.status) {
 						Message msg = new Message();
 						msg.setMessage("Status was updated");
+						msg.setMessageType(Message.SEND_STATUS);
 						msg.setStatus(this.status);
 						msg.setClientId(this.getId());
-						out.println(mapper.writeValueAsString(msg));
+						String sentMessage = mapper.writeValueAsString(msg);
+						out.println(sentMessage);
+						logger.info("Sending to server: " +sentMessage);
 					}
 
 				}
@@ -134,7 +137,7 @@ public class Client extends Task {
 		try { 
 			
 			Message msg = new Message();
-			msg.setMessageType(Message.DISCONNECT_MSG);
+			msg.setMessageType(Message.DISCONNECT);
 			msg.setClientId(this.getId());
 			out.println(mapper.writeValueAsString(msg));
 			socket.shutdownOutput();
@@ -152,7 +155,7 @@ public class Client extends Task {
 		try {
 			message = mapper.readValue(fromServer, Message.class);
 
-			if (message.getMessage() != null && message.getMessage().contains("Recieved connection, returning ID")) {
+			if (message.getMessageType() == Message.ACCEPT_ID_REQUEST) {
 
 				this.id = message.getClientId(); // Client now has id.
 				// Update title of Client GUI with id:
@@ -232,7 +235,7 @@ public class Client extends Task {
 		ObjectMapper mapper = new ObjectMapper();
 
 		Message message = new Message();
-		message.setMessageType(Message.SEND_STATUS_MSG);
+		message.setMessageType(Message.SEND_STATUS);
 		message.setIp(ip);
 		message.setPort(port);
 		message.setClientId(id);

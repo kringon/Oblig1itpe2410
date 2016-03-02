@@ -46,28 +46,17 @@ public class ServerThread extends Thread {
 				String inputLine = "";
 
 				while ((inputLine = in.readLine()) != null) {
-
 					logger.info("Getting info from client: " + inputLine);
-					String output = Protocol.processClientOutput(inputLine);
-					if (!inputLine.equals("")) {
-						ObjectMapper mapper = new ObjectMapper();
-						Message msg = mapper.readValue(inputLine, Message.class);
-						if (msg.getMessageType() == Message.REQUEST_ID_MSG) {
-							// Store id of client:
-							Message msg2 = mapper.readValue(output, Message.class);
-							connectedClientId = msg2.getClientId();
-							// Send id to client:
-							out.println(output);
-						} else if (msg.getMessageType() == Message.SEND_STATUS_MSG) {
-							MockClient mock = App.getMockClient(msg.getClientId());
-							if (mock != null) {
-								mock.setStatusMessage(msg.getStatusMessage());
-							}
-						} else if (msg.getMessageType() == Message.DISCONNECT_MSG) {
-							logger.info("Removing mockclient from list");
+					ObjectMapper mapper = new ObjectMapper();
+					Message msg = mapper.readValue(inputLine, Message.class);
+
+					Message output = Protocol.processClientOutput(msg);
+					if (output != null) {
+						out.println(mapper.writeValueAsString(output));
+						if (output.getMessageType() == Message.ACCEPT_DISCONNECT) {
 							closeThread();
-							logger.info("Closed socket");
-							// running = false;
+						} else if (output.getMessageType() == Message.ACCEPT_ID_REQUEST) {
+							connectedClientId = output.getClientId();
 						}
 					}
 
@@ -75,33 +64,14 @@ public class ServerThread extends Thread {
 						logger.warn("Connection closed abbruptly");
 						closeThread();
 						logger.warn("Socket was terminated successfully");
-						// running = false;
+
 					}
 
 				}
-				/*
-				 * if (lastProtocolId != protocol.getProtocolId()) { String
-				 * message = protocol.output();
-				 * 
-				 * if (!message.isEmpty()){ out.println(message); lastProtocolId
-				 * = protocol.getProtocolId(); } }
-				 */
-
-				// logger.info("lastPrintedAction: " + lastPrintedAction + "
-				// App.lastAction: " + App.lastAction);
-				// if (lastPrintedAction != App.lastAction) {
-				// String message = Protocol.produceMessage(App.lastAction,
-				// App.getSelectedClientIds());
-				// logger.info("Sending message to Client: " + message);
-				// if (!message.isEmpty()) {
-				// out.println(message);
-				// lastPrintedAction = App.lastAction;
-				// }
-				//
-				// }
 
 			} catch (IOException e1) {
 				logger.error("Could not connect to socket: ", e1.getLocalizedMessage());
+				logger.error(e1.getMessage());
 			}
 		}
 

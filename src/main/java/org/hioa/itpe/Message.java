@@ -11,9 +11,13 @@ public class Message {
 
 	private int messageType;
 
-	public static int REQUEST_ID_MSG = 1;
-	public static int SEND_STATUS_MSG = 2;
-	public static int DISCONNECT_MSG = 3;
+	//Messagetypes
+	public static final int REQUEST_ID = 1;
+	public static final int SEND_STATUS = 2;
+	public static final int DISCONNECT = 3;
+	public static final int  SEND_ID = 4; 
+	public static final int ACCEPT_DISCONNECT = 5;
+	public static final int ACCEPT_ID_REQUEST = 6;
 
 	private List<Integer> idList;
 	// private String status;
