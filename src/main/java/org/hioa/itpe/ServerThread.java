@@ -82,7 +82,7 @@ public class ServerThread extends Thread {
 						logger.info("Closing socket");
 						socket.close();
 						this.interrupt();
-						running = false;
+						//running = false;
 					}
 
 				}

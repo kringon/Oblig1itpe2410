@@ -13,6 +13,7 @@ public class Message {
 
 	public static int REQUEST_ID_MSG = 1;
 	public static int SEND_STATUS_MSG = 2;
+	public static int DISCONNECT_MSG = 3;
 	
 	private List<Integer> idList;
 	// private String status;
