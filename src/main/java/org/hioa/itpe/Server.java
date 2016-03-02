@@ -18,7 +18,7 @@ public class Server extends Task {
 	public static String hostName = "127.0.0.1";
 	public static ServerThread serverThread;
 	private static Logger logger = LoggerFactory.getLogger(Server.class);
-	private List<ServerThread> serverThreads = new ArrayList<ServerThread>();
+	private static List<ServerThread> serverThreads = new ArrayList<ServerThread>();
 	
 	private String ipAddress;
 	
@@ -81,6 +81,14 @@ public class Server extends Task {
 	
 	public String getIpAddress() {
 		return ipAddress;
+	}
+	
+	public static void removeThread( long l){
+		for(int i=0; i< serverThreads.size(); i++){
+			if(serverThreads.get(i).getId() == l){
+				serverThreads.get(i).interrupt();
+			}
+		}
 	}
 
 }

@@ -55,6 +55,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /**
  * 
@@ -133,6 +134,12 @@ public class App extends Application {
 		
 		stage.setTitle("Traffic Light Control Center");
 		stage.show();
+		
+		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			public void handle(WindowEvent ev) {
+				System.exit(-1);	
+			}
+		});
 
 	}
 
@@ -309,7 +316,8 @@ public class App extends Application {
 		clientTableScroll.setVbarPolicy(ScrollBarPolicy.ALWAYS); // Always show vertical scrollbar
 		clientTableScroll.setContent(clientTable);
 		
-		// Start thread to refresh table every 1 second
+		// Start thread to refresh table every 1 second instead of refreshing every time a client sends a message to prevent loads with many clients.
+		//This causes a slight delay between light shifting and status in table updating, but this will be a maximum of 250ms.
 		Thread updateTableThread = new Thread() {
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
@@ -319,7 +327,7 @@ public class App extends Application {
 					}
 					*/
 					try {
-						sleep(1000);
+						sleep(250);
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 						return;
@@ -541,4 +549,6 @@ public class App extends Application {
 		server.updateAllThreads(prot);
 		// lastAction = status;
 	}
+	
+	
 }

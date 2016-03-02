@@ -11,13 +11,18 @@ public class Message {
 
 	private int messageType;
 
-	//Messagetypes
+	// Messagetypes
 	public static final int REQUEST_ID = 1;
-	public static final int SEND_STATUS = 2;
-	public static final int DISCONNECT = 3;
-	public static final int  SEND_ID = 4; 
-	public static final int ACCEPT_DISCONNECT = 5;
 	public static final int ACCEPT_ID_REQUEST = 6;
+	public static final int SEND_ID = 4;
+	public static final int SEND_STATUS = 2;
+	public static final int PROPOSE_DISCONNECT = 3;
+	public static final int ACCEPT_DISCONNECT = 5;
+	public static final int DISCONNECTED = 7;
+	public static final int CLOSED = 8;
+
+
+
 
 	private List<Integer> idList;
 	// private String status;

@@ -107,11 +107,11 @@ public class Protocol {
 			MockClient mock = App.getMockClient(message.getClientId());
 			if (mock != null) {
 				mock.setStatusMessage(message.getStatusMessage());
-				App.updateMockClientTable();
+				//App.updateMockClientTable();
 			}
-		} else if (message.getMessageType() == Message.DISCONNECT) {
+		} else if (message.getMessageType() == Message.PROPOSE_DISCONNECT) {
 			Message msg = new Message();
-			msg.setMessageType(Message.DISCONNECT);
+			msg.setMessageType(Message.ACCEPT_DISCONNECT);
 			msg.setClientId(message.getClientId());
 			return msg;
 		}

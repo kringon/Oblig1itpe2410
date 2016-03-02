@@ -26,7 +26,7 @@ public class Client extends Task {
 	private Socket socket;
 	private PrintWriter out;
 	private BufferedReader in;
-	private ObjectMapper mapper; 
+	private ObjectMapper mapper;
 	private ClientGUI clientGUI;
 
 	private String ip;
@@ -60,7 +60,7 @@ public class Client extends Task {
 		this.greenInterval = 0;
 		this.yellowInterval = 0;
 		this.redInterval = 0;
-		
+
 		this.clientGUI = clientGUI;
 		id = -1; // updated in updateFromServerJSON(String fromServer) method.
 		mapper = new ObjectMapper();
@@ -103,26 +103,28 @@ public class Client extends Task {
 						msg.setClientId(this.getId());
 						String sentMessage = mapper.writeValueAsString(msg);
 						out.println(sentMessage);
-						logger.info("Sending to server: " +sentMessage);
+						logger.info("Sending to server: " + sentMessage);
 					}
 
 				}
 			} catch (UnknownHostException e) {
 				logger.info("Don't know about host " + ip);
 				Platform.runLater(new Runnable() {
-			        public void run() {
-			        	clientGUI.getStage().close(); // close "parent" clientGUI
-			        }
-			    });
+					public void run() {
+						clientGUI.getStage().close(); // close "parent"
+														// clientGUI
+					}
+				});
 				this.cancel(); // cancel this thread
 			} catch (IOException e) {
 				logger.info("Couldn't get I/O for the connection to " + ip);
-				
+
 				Platform.runLater(new Runnable() {
-			        public void run() {
-			        	clientGUI.getStage().close(); // close "parent" clientGUI
-			        }
-			    });
+					public void run() {
+						clientGUI.getStage().close(); // close "parent"
+														// clientGUI
+					}
+				});
 				this.cancel(); // cancel this thread
 			}
 
@@ -132,16 +134,16 @@ public class Client extends Task {
 
 		return null;
 	}
-	
+
 	public void closeSocket() {
-		try { 
-			
+		try {
+
 			Message msg = new Message();
-			msg.setMessageType(Message.DISCONNECT);
+			msg.setMessageType(Message.PROPOSE_DISCONNECT);
 			msg.setClientId(this.getId());
 			out.println(mapper.writeValueAsString(msg));
 			socket.shutdownOutput();
-			socket.close();
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -160,20 +162,30 @@ public class Client extends Task {
 				this.id = message.getClientId(); // Client now has id.
 				// Update title of Client GUI with id:
 				Platform.runLater(new Runnable() {
-			        public void run() {
-			        	clientGUI.getStage().setTitle("Client: " + id);
-			        }
-			    });
-				
-				
+					public void run() {
+						clientGUI.getStage().setTitle("Client: " + id);
+					}
+				});
+
+			} else if (message.getMessageType() == Message.ACCEPT_DISCONNECT) {
+
+				socket.shutdownInput();
+				socket.close();
+				logger.info("Closing client after server accept");
+				Thread.currentThread().interrupt();
+
 			} else {
 
 				boolean inList = false;
-				for (Integer id : message.getIdList()) {
-					if (id.intValue() == this.id) {
-						inList = true;
+
+				if (message.getIdList() != null) {
+					for (Integer id : message.getIdList()) {
+						if (id.intValue() == this.id) {
+							inList = true;
+						}
 					}
 				}
+
 				if (inList) {
 					int statusFromServer = message.getStatus();
 					if (statusFromServer == Protocol.CYCLE) {
@@ -241,13 +253,13 @@ public class Client extends Task {
 		message.setClientId(id);
 		message.setStatus(status);
 		message.setStatusMessage(statusMessage);
-		
+
 		try {
 			out.println(mapper.writeValueAsString(message));
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}
 	}
 
 	private void updateStatusMessage(int remainingCycleTime) {
@@ -267,7 +279,7 @@ public class Client extends Task {
 
 	// Updates the displayed traffic light image (uses paramater variable)
 	public void updateImage(int status) {
-		
+
 		if (status == Protocol.GREEN) {
 			displayedImage.setImage(new Image(new File("src/main/resources/green.png").toURI().toString()));
 		} else if (status == Protocol.RED) {
@@ -388,7 +400,7 @@ public class Client extends Task {
 			boolean yellowOn = false; // used by status: Flashing
 			updateStatusMessage(0);
 			while (!Thread.currentThread().isInterrupted()) {
-				
+
 				// Switch to NONE (if previous status = on)
 				if (yellowOn) {
 					updateImage(Protocol.NONE);
