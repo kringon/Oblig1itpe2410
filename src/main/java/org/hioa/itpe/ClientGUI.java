@@ -44,7 +44,7 @@ public class ClientGUI {
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			public void handle(WindowEvent ev) {
 				System.out.println("closing");
-				thread.stop();
+				thread.interrupt();
 				int index = -1;
 				for(int i = 0; i< App.mockClientList.size(); i++){
 					MockClient cli = App.mockClientList.get(i);
