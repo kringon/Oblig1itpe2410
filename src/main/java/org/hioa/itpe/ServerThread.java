@@ -21,6 +21,8 @@ public class ServerThread extends Thread {
 	private Protocol protocol;
 
 	private PrintWriter out;
+	
+	private volatile boolean running;
 
 	public ServerThread(Socket socket) {
 
@@ -28,13 +30,14 @@ public class ServerThread extends Thread {
 		this.socket = socket;
 		connectedClientId = -1;
 		protocol = new Protocol();
+		running = true;
 
 		// lastPrintedAction = -1;
 	}
 
 	public void run() {
-
-		while (true) {
+		
+		while(!Thread.currentThread().isInterrupted()) {
 
 			try {
 
@@ -43,7 +46,7 @@ public class ServerThread extends Thread {
 				String inputLine = "";
 
 				while ((inputLine = in.readLine()) != null) {
-					
+
 					logger.info("Getting info from client: " + inputLine);
 					String output = Protocol.processClientOutput(inputLine);
 					if (!inputLine.equals("")) {
@@ -61,6 +64,25 @@ public class ServerThread extends Thread {
 								mock.setStatusMessage(msg.getStatusMessage());
 							}
 						}
+					}
+					
+					if (socket.getInputStream().read() == -1) {
+						logger.info("Removing mockclient from list");
+						int index = -1;
+						for (int i = 0; i < App.mockClientList.size(); i++) {
+							MockClient cli = App.mockClientList.get(i);
+							if (cli.getId() == connectedClientId) {
+								index = i;
+							}
+						}
+						if (index != -1) {
+							App.mockClientList.remove(index);
+							App.updateMockClientTable();
+						}
+						logger.info("Closing socket");
+						socket.close();
+						this.interrupt();
+						running = false;
 					}
 
 				}
@@ -84,7 +106,7 @@ public class ServerThread extends Thread {
 				// }
 				//
 				// }
-
+				
 			} catch (IOException e1) {
 				logger.error("Could not connect to socket: ", e1.getLocalizedMessage());
 			}

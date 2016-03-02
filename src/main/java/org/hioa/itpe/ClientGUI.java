@@ -46,17 +46,7 @@ public class ClientGUI {
 				System.out.println("closing");
 				thread.interrupt();
 				client.closeSocket();
-				int index = -1;
-				for(int i = 0; i< App.mockClientList.size(); i++){
-					MockClient cli = App.mockClientList.get(i);
-					if(cli.getId() == client.getId()){
-						index = i;
-					}
-				}
-				if (index != -1) {
-					App.mockClientList.remove(index);
-					App.updateMockClientTable();
-				}
+				
 			}
 		});
 	}
