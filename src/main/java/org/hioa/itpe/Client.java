@@ -76,10 +76,11 @@ public class Client extends Task {
 		id = -1;
 		mapper = new ObjectMapper();
 	}
-	
+
 	/**
-	 * Invoked upon creation of the client thread. Similar to run(). Attempts a server connection
-	 * upon creation, and listens to any incoming server messages.
+	 * Invoked upon creation of the client thread. Similar to run(). Attempts a
+	 * server connection upon creation, and listens to any incoming server
+	 * messages.
 	 */
 	@Override
 	protected Object call() throws Exception {
@@ -103,7 +104,8 @@ public class Client extends Task {
 
 				// Keep reading server output
 				while ((fromServer = in.readLine()) != null) {
-					logger.info("FromServer: " + fromServer);
+					logger.info("Client(id:" + id + "): " + 
+							"FromServer: " + fromServer);
 
 					int tempStatus = this.status;
 
@@ -139,9 +141,11 @@ public class Client extends Task {
 
 		return null;
 	}
-	
+
 	/**
-	 * Sends a propose disconnect message to server, and shuts down any further output to server.
+	 * Sends a propose disconnect message to server, and shuts down any further
+	 * output to server.
+	 * 
 	 * @see java.net.Socket#close()
 	 */
 	public void closeSocketOutput() {
@@ -160,10 +164,10 @@ public class Client extends Task {
 	}
 
 	/**
-	 * Helper method to read the info from the server. 
+	 * Helper method to read the info from the server.
 	 * <p>
-	 * Converts the String of text from the server into a Message object
-	 * and updates client and output message depending.
+	 * Converts the String of text from the server into a Message object and
+	 * updates client and output message depending.
 	 * 
 	 * @param fromServer
 	 *            the info recieved from the server
@@ -187,74 +191,70 @@ public class Client extends Task {
 				outMsg.setMessageType(Message.ID_RECEIVED);
 				String outJSON = mapper.writeValueAsString(outMsg);
 				out.println(outJSON);
-				logger.info("Sending to server acknowledgment of id: " + outJSON);
+				logger.info("Client(id:" + id + "): " + "Sending to server acknowledgment of id: " + outJSON);
 
 			} else if (message.getMessageType() == Message.ACCEPT_DISCONNECT) {
 				socket.shutdownInput();
 				socket.close();
-				logger.info("Closing client after server accept");
+				logger.info("Client(id:" + id + "): " + "Closing client after server accept");
 				Thread.currentThread().interrupt();
 
 			} else {
 				// Default action if no other messageType is implemented
-				boolean inList = false;
 
-				if (message.getIdList() != null) {
-					for (Integer id : message.getIdList()) {
-						if (id.intValue() == this.id) {
-							inList = true;
-						}
+				/*
+				 * if (message.getIdList() != null) { for (Integer id :
+				 * message.getIdList()) { if (id.intValue() == this.id) {
+				 * //inList = true; } } }
+				 * 
+				 * if (true) {
+				 */
+				int statusFromServer = message.getStatus();
+				if (statusFromServer == Protocol.CYCLE) {
+					if (flashingTask.isAlive()) {
+						flashingTask.interrupt();
 					}
+					if (cycleTask.isAlive()) {
+						cycleTask.interrupt();
+					}
+					this.status = Protocol.CYCLE;
+					this.cycle = true;
+					this.greenInterval = message.getGreenInterval();
+					this.yellowInterval = message.getYellowInterval();
+					this.redInterval = message.getRedInterval();
+
+					cycleTask = new LightCycleTask();
+					cycleTask.start();
+				} else if (statusFromServer == Protocol.FLASHING) {
+					this.cycle = false;
+					if (cycleTask.isAlive()) {
+						cycleTask.interrupt();
+					}
+					if (flashingTask.isAlive()) {
+						flashingTask.interrupt();
+					}
+					status = statusFromServer;
+
+					flashingTask = new LightFlashingTask();
+					flashingTask.start();
+
+				} else {
+					this.cycle = false;
+					if (cycleTask.isAlive()) {
+						cycleTask.interrupt();
+					}
+					if (flashingTask.isAlive()) {
+						flashingTask.interrupt();
+					}
+					this.status = statusFromServer;
+					updateStatusMessage(0);
+					updateImage();
 				}
 
-				if (inList) {
-					int statusFromServer = message.getStatus();
-					if (statusFromServer == Protocol.CYCLE) {
-						if (flashingTask.isAlive()) {
-							flashingTask.interrupt();
-						}
-						if (cycleTask.isAlive()) {
-							cycleTask.interrupt();
-						}
-						this.status = Protocol.CYCLE;
-						this.cycle = true;
-						this.greenInterval = message.getGreenInterval();
-						this.yellowInterval = message.getYellowInterval();
-						this.redInterval = message.getRedInterval();
-
-						cycleTask = new LightCycleTask();
-						cycleTask.start();
-					} else if (statusFromServer == Protocol.FLASHING) {
-						this.cycle = false;
-						if (cycleTask.isAlive()) {
-							cycleTask.interrupt();
-						}
-						if (flashingTask.isAlive()) {
-							flashingTask.interrupt();
-						}
-						status = statusFromServer;
-
-						flashingTask = new LightFlashingTask();
-						flashingTask.start();
-
-					} else {
-						this.cycle = false;
-						if (cycleTask.isAlive()) {
-							cycleTask.interrupt();
-						}
-						if (flashingTask.isAlive()) {
-							flashingTask.interrupt();
-						}
-						this.status = statusFromServer;
-						updateStatusMessage(0);
-						updateImage();
-					}
-
-				}
 			}
 
 		} catch (IOException e) {
-			logger.error("There was an IOException reading info from the server: ", e.getMessage());
+			logger.error("Client(id:" + id + "): " + "There was an IOException reading info from the server: ", e.getMessage());
 		}
 	}
 
@@ -277,7 +277,7 @@ public class Client extends Task {
 		try {
 			out.println(mapper.writeValueAsString(message));
 		} catch (JsonProcessingException e) {
-			logger.error("There was a JsonProcessingException: ", e.getMessage());
+			logger.error("Client(id:" + id + "): " + "There was a JsonProcessingException: ", e.getMessage());
 		}
 	}
 
@@ -333,6 +333,7 @@ public class Client extends Task {
 
 	private class LightCycleTask extends Thread {
 
+		
 		@Override
 		public void run() {
 			// Counters for the cycle:
@@ -363,7 +364,7 @@ public class Client extends Task {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
-							e.printStackTrace();
+							logger.debug("Client(id:" + id + "): " + "Cycle interruped. Exiting cycle thread.");
 							return;
 						}
 						yellowCounter++; // update counter by 1 (1
@@ -380,7 +381,7 @@ public class Client extends Task {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
-							e.printStackTrace();
+							logger.debug("Client(id:" + id + "): " + "Cycle interruped. Exiting cycle thread.");
 							return;
 						}
 						greenCounter++; // update counter by 1 (1 second
@@ -397,7 +398,7 @@ public class Client extends Task {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
-							e.printStackTrace();
+							logger.debug("Client(id:" + id + "): " + "Cycle interruped. Exiting cycle thread.");
 							return;
 						}
 						redCounter++; // update counter by 1 (1 second
@@ -425,7 +426,7 @@ public class Client extends Task {
 					try {
 						Thread.sleep(500);
 					} catch (InterruptedException e) {
-						e.printStackTrace();
+						logger.debug("Client(id:" + id + "): " + "Flashing interruped. Exiting flashing thread.");
 						Thread.currentThread().interrupt();
 						return;
 					}
@@ -438,7 +439,7 @@ public class Client extends Task {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
-						e.printStackTrace();
+						logger.debug("Client(id:" + id + "): " + "Flashing interruped. Exiting flashing thread.");
 						return;
 					}
 					yellowOn = true; // set local variable to indicate yellow on

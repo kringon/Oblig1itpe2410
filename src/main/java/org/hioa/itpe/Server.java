@@ -65,32 +65,15 @@ public class Server extends Task {
 		}
 	}
 
-	// THE ONE IN USE:
-	// Update ServerThread with new protocol and send a message of the protocol
-	// to out.println
-	public void updateAllThreads(Protocol protocol) {
-		for (ServerThread thread : serverThreads) {
-			thread.updateProtocol(protocol);
-		}
-	}
-
-	// Only updates the selected servers.
+	// Updates the selected servers.
 	public void updateThreads(Protocol protocol, List<Integer> clientIds) {
 		for (int clientId : clientIds) {
 			for (ServerThread thread : serverThreads) {
 				if (thread.getConnectedClientId() == clientId) {
-					thread.updateProtocol(protocol);
+					thread.output(protocol.output());
 				}
 			}
-				
-				
-		}
-	}
 
-	// Send a JSON String to ServerThreads out.println
-	public void updateAllThreads(String message) {
-		for (ServerThread thread : serverThreads) {
-			thread.printMessage(message);
 		}
 	}
 
@@ -103,6 +86,26 @@ public class Server extends Task {
 			if (serverThreads.get(i).getId() == l) {
 				serverThreads.get(i).interrupt();
 			}
+		}
+	}
+
+	////////////////////////////////////////////
+	//     METHODS BELOW  NOT IN USE       //
+	/////////////////////////////////////////
+	
+	
+	// Update ServerThread with new protocol and send a message of the protocol
+	// to out.println
+	public void updateAllThreads(Protocol protocol) {
+		for (ServerThread thread : serverThreads) {
+			thread.updateProtocol(protocol);
+		}
+	}
+
+	// Send a JSON String to ServerThreads out.println
+	public void updateAllThreads(String message) {
+		for (ServerThread thread : serverThreads) {
+			thread.printMessage(message);
 		}
 	}
 
