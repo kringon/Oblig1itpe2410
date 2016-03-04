@@ -93,12 +93,10 @@ public class Protocol {
 
 	public static Message processClientOutput(Message message) {
 
-	
-		
 		if (message.getMessageType() == Message.REQUEST_ID) {
 			Message msg = new Message();
 			int id = App.addNewMockClient(new MockClient(message.getIp(), message.getPort()));
-			
+
 			msg.setMessageType(Message.ACCEPT_ID_REQUEST);
 			msg.setClientId(id);
 			return msg;
@@ -107,7 +105,7 @@ public class Protocol {
 			MockClient mock = App.getMockClient(message.getClientId());
 			if (mock != null) {
 				mock.setStatusMessage(message.getStatusMessage());
-				//App.updateMockClientTable();
+				// App.updateMockClientTable();
 			}
 		} else if (message.getMessageType() == Message.PROPOSE_DISCONNECT) {
 			Message msg = new Message();
@@ -185,7 +183,6 @@ public class Protocol {
 		try {
 			whatismyip = new URL("http://checkip.amazonaws.com");
 			BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
-
 			ip = in.readLine(); // ip as String
 			return ip;
 
