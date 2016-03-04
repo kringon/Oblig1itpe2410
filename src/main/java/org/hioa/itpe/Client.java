@@ -265,6 +265,7 @@ public class Client extends Task {
 		Message message = new Message();
 		message.setMessageType(Message.SEND_CYCLE_STATUS);
 		message.setStatus(status);
+		message.setClientId(id);
 		String statusMessage = Protocol.statusToString(this.status) + " (" + remainingCycleTime + "s)";
 		message.setStatusMessage(statusMessage);
 
