@@ -47,7 +47,7 @@ public class ClientGUI {
 	private void setOnCloseRequest() {
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			public void handle(WindowEvent ev) {
-				client.closeSocket();
+				client.closeSocketOutput();
 //				thread.interrupt();
 			
 				

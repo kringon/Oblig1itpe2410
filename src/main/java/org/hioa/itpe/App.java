@@ -523,7 +523,8 @@ public class App extends Application {
 		if (status == Protocol.CYCLE) {
 			prot.setInterval(greenSpinner.getValue(), yellowSpinner.getValue(), redSpinner.getValue());
 		}
-		server.updateAllThreads(prot);
+		//server.updateAllThreads(prot);
+		server.updateThreads(prot, getSelectedClientIds());
 
 	}
 

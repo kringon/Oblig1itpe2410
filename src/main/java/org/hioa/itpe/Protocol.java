@@ -36,7 +36,7 @@ public class Protocol {
 	private int yellowInterval = 0;
 	private int redInterval = 0;
 	// private int intersection;
-
+	
 	private List<Integer> idList;
 
 	public Protocol() {
@@ -49,7 +49,15 @@ public class Protocol {
 	public String output() {
 		ObjectMapper mapper = new ObjectMapper();
 
-		Message message = new Message(idList, status, greenInterval, yellowInterval, redInterval);
+		//Message message = new Message(idList, status, greenInterval, yellowInterval, redInterval);
+		Message message = new Message();
+		message.setStatus(status);
+		if (status == CYCLE) {
+			message.setGreenInterval(greenInterval);
+			message.setYellowInterval(yellowInterval);
+			message.setRedInterval(redInterval);
+		}
+		
 
 		// Convert object to JSON string
 		try {
@@ -58,9 +66,10 @@ public class Protocol {
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return "";
 		}
 
-		return "";
+		
 	}
 
 	public String processInput(String theInput) {

@@ -37,7 +37,7 @@ public class ServerThread extends Thread {
 				String inputLine = "";
 
 				while ((inputLine = in.readLine()) != null) {
-					logger.info("Getting info from client: " + inputLine);
+					logger.info("Getting info from client(id: " + connectedClientId + "): " + inputLine);
 					ObjectMapper mapper = new ObjectMapper();
 					Message msg = mapper.readValue(inputLine, Message.class);
 
@@ -73,6 +73,14 @@ public class ServerThread extends Thread {
 	public void updateProtocol(Protocol protocol) {
 		this.protocol = protocol;
 		out.println(protocol.output());
+	}
+	
+	/**
+	 * Updates this thread to a new protocol, and prints a new output from that protocol
+	 * @param protocol the protocol to set
+	 */
+	public void output(String output) {
+		out.println(output);
 	}
 
 	public void printMessage(String message) {

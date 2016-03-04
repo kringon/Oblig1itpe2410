@@ -14,7 +14,7 @@ public class Message {
 	// Messagetypes
 	public static final int REQUEST_ID = 1;
 	public static final int ACCEPT_ID_REQUEST = 6;
-	public static final int SEND_ID = 4;
+	public static final int ID_RECEIVED = 4;
 	public static final int SEND_STATUS = 2;
 	public static final int PROPOSE_DISCONNECT = 3;
 	public static final int ACCEPT_DISCONNECT = 5;
