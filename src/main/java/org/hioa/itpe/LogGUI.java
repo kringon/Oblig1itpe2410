@@ -27,12 +27,9 @@ import javafx.stage.Stage;
  * for filtering the output.
  *
  */
-@SuppressWarnings("restriction")
 public class LogGUI {
 
 	private Stage stage;
-	private App parentGUI;
-
 	private static Logger logger = Logger.getLogger(ClientConnectGUI.class);
 
 	private StringAppender stringAppender;

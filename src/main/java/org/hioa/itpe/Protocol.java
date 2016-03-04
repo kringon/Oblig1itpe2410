@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -15,13 +14,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
- * Defines different types of behaviour depending on what kind of status-update that is sent
+ * Defines different types of behaviour depending on what kind of status-update
+ * that is sent
  *
  */
 public class Protocol {
 
 	private static Logger logger = Logger.getLogger(Protocol.class);
-	
+
 	// Status values:
 	public static final int NONE = 1;
 	public static final int GREEN = 2;
@@ -38,18 +38,15 @@ public class Protocol {
 	private int greenInterval = 0;
 	private int yellowInterval = 0;
 	private int redInterval = 0;
-	// private int intersection;
-	
-	private List<Integer> idList;
 
 	public Protocol() {
 		status = NONE;
-		idList = new ArrayList<Integer>();
 		protocolId = protocolIdCounter++;
 	}
 
 	/**
 	 * Returns a JSON String representing Client traffic light status
+	 * 
 	 * @return
 	 */
 	public String output() {
@@ -61,7 +58,6 @@ public class Protocol {
 			message.setYellowInterval(yellowInterval);
 			message.setRedInterval(redInterval);
 		}
-		
 
 		// Convert object to JSON string
 		try {
@@ -73,9 +69,8 @@ public class Protocol {
 			return "";
 		}
 
-		
 	}
-	
+
 	/**
 	 * 
 	 * @param theInput
@@ -105,13 +100,11 @@ public class Protocol {
 		redInterval = red;
 	}
 
-	public void setIdList(List<Integer> idList) {
-		this.idList = idList;
-	}
-	
+
 	/**
-	 * Processes the messageType of the received message and does appropriate action
-	 * before returning a new message or null.
+	 * Processes the messageType of the received message and does appropriate
+	 * action before returning a new message or null.
+	 * 
 	 * @param message
 	 * @return
 	 */
@@ -145,12 +138,12 @@ public class Protocol {
 		}
 		return null;
 	}
-	
+
 	public static String produceMessage(int status, List<Integer> clientIds) {
 		Message message = new Message();
 		ObjectMapper mapper = new ObjectMapper();
 		message.setIdList(clientIds);
-		try { 
+		try {
 			switch (status) {
 			case Protocol.GREEN:
 				message.setStatus(Protocol.GREEN);
@@ -205,9 +198,10 @@ public class Protocol {
 			return "Standby";
 		}
 	}
-	
+
 	/**
 	 * Checks external ip.
+	 * 
 	 * @return external ip as String
 	 */
 	public static String getExternalIp() {

@@ -13,8 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Message {
-	private int messageId; // Instead of using lastAction. May not be necessary
-							// now?
 
 	private int messageType;
 

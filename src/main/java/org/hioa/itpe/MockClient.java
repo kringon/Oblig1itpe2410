@@ -1,13 +1,6 @@
 package org.hioa.itpe;
 
-import org.apache.log4j.Logger;
-
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 
 /**
  * Helper class to display the clients in the table at App.java
@@ -15,6 +8,7 @@ import javafx.beans.property.StringProperty;
  * @author T820082
  *
  */
+
 public class MockClient {
 	
 	private StringProperty ip;
@@ -22,9 +16,7 @@ public class MockClient {
 	private BooleanProperty selected;
 	private IntegerProperty id;
 	private StringProperty statusMessage;
-	
-	private static Logger logger = Logger.getLogger(Client.class);
-	
+
 	// Default constructor necessary for TableView:
 	public MockClient() {
 

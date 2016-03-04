@@ -19,7 +19,7 @@ import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-@SuppressWarnings({ "restriction", "rawtypes" })
+@SuppressWarnings({ "rawtypes" })
 public class Client extends Task {
 
 	private Socket socket;
@@ -35,7 +35,6 @@ public class Client extends Task {
 	private static Logger logger = Logger.getLogger(Client.class);
 
 	private int status;
-	private boolean cycle;
 	private int greenInterval;
 	private int yellowInterval;
 	private int redInterval;
@@ -62,8 +61,6 @@ public class Client extends Task {
 		this.port = port;
 		this.displayedImage = dispImage;
 		this.status = 0;
-		this.cycle = false;
-
 		this.greenInterval = 0;
 		this.yellowInterval = 0;
 		this.redInterval = 0;
@@ -204,7 +201,6 @@ public class Client extends Task {
 						cycleTask.interrupt();
 					}
 					this.status = Protocol.CYCLE;
-					this.cycle = true;
 					this.greenInterval = message.getGreenInterval();
 					this.yellowInterval = message.getYellowInterval();
 					this.redInterval = message.getRedInterval();
@@ -213,7 +209,6 @@ public class Client extends Task {
 					cycleTask.start();
 					sendStatusToServer();
 				} else if (statusFromServer == Protocol.FLASHING) {
-					this.cycle = false;
 					if (cycleTask.isAlive()) {
 						cycleTask.interrupt();
 					}
@@ -227,7 +222,6 @@ public class Client extends Task {
 					sendStatusToServer();
 
 				} else {
-					this.cycle = false;
 					if (cycleTask.isAlive()) {
 						cycleTask.interrupt();
 					}

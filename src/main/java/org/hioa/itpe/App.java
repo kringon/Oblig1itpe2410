@@ -8,32 +8,17 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.javafx.scene.control.skin.TableViewSkinBase;
 
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.*;
 import javafx.event.ActionEvent;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.geometry.*;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
+import javafx.scene.control.cell.*;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -43,7 +28,6 @@ import javafx.stage.WindowEvent;
  * @author s163472,s929511,s169964
  *
  */
-@SuppressWarnings("restriction")
 public class App extends Application {
 
 	// Client table:
@@ -115,7 +99,7 @@ public class App extends Application {
 			URL url = new File("src/main/resources/AppStyle.css").toURI().toURL();
 			scene.getStylesheets().add(url.toExternalForm());
 		} catch (MalformedURLException e) {
-			logger.error("Malformed URL: " +  e.getMessage());
+			logger.error("Malformed URL: " + e.getMessage());
 		}
 
 		// Quit the entire program when closing the App
@@ -165,7 +149,7 @@ public class App extends Application {
 			btnStart.setDisable(true);
 			btnCreate.setDisable(false);
 		});
-		
+
 		final Button btnLog = new Button("View log");
 		btnLog.setPrefSize(100, 20);
 		btnLog.getStyleClass().add("button-start");
@@ -176,7 +160,7 @@ public class App extends Application {
 					logGui.getStage().show();
 				}
 			} else {
-					logGui = new LogGUI();
+				logGui = new LogGUI();
 			}
 		});
 
@@ -184,11 +168,11 @@ public class App extends Application {
 		hbox.getChildren().addAll(btnStart, btnCreate, btnLog);
 		return hbox;
 	}
-	
+
 	public LogGUI getLogGui() {
 		return logGui;
 	}
-	
+
 	public void setLogGui(LogGUI logGui) {
 		this.logGui = logGui;
 	}
@@ -260,8 +244,9 @@ public class App extends Application {
 	/**
 	 * Helper method to initialize the Client Table displayed in Apps stage
 	 */
+	@SuppressWarnings("unchecked")
 	private void initClientTable() {
-		clientTable = new TableView<>();
+		clientTable = new TableView<MockClient>();
 		clientTable.setEditable(false);
 		clientTable.setPrefSize(400, 400); // width, height
 
@@ -429,7 +414,7 @@ public class App extends Application {
 		redManBtn.getStyleClass().add("button-set");
 		redManBtn.setMaxWidth(Double.MAX_VALUE);
 		redManBtn.setOnAction((ActionEvent ae) -> {
-			
+
 			handleStatusButtonClick(Protocol.RED);
 		});
 
@@ -540,9 +525,7 @@ public class App extends Application {
 	 * @param status
 	 */
 	private void handleStatusButtonClick(int status) {
-		
-		
-		ObjectMapper mapper = new ObjectMapper();
+
 		Message message = new Message();
 		message.setStatus(status);
 		if (status == Protocol.CYCLE) {
@@ -556,22 +539,18 @@ public class App extends Application {
 			logger.warn("No clients connected to server");
 		} else if (getSelectedClientIds().isEmpty()) {
 			logger.warn("No clients selected from the table");
-		}else {
+		} else {
 			server.updateThreads(message, getSelectedClientIds());
 			logger.info("Setting all selected clients " + Protocol.statusToString(status));
 		}
-		
+
 		/*
-		Protocol prot = new Protocol();
-		prot.setStatus(status);
-		prot.setIdList(getSelectedClientIds());
-		if (status == Protocol.CYCLE) {
-			prot.setInterval(greenSpinner.getValue(), yellowSpinner.getValue(), redSpinner.getValue());
-		}
-		//server.updateAllThreads(prot);
+		 * Protocol prot = new Protocol(); prot.setStatus(status);
+		 * prot.setIdList(getSelectedClientIds()); if (status == Protocol.CYCLE)
+		 * { prot.setInterval(greenSpinner.getValue(), yellowSpinner.getValue(),
+		 * redSpinner.getValue()); } //server.updateAllThreads(prot);
 		 * server.updateThreads(prot, getSelectedClientIds());
 		 */
-		
 
 	}
 

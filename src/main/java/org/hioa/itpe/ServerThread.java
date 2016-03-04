@@ -21,7 +21,6 @@ public class ServerThread extends Thread {
 	private Socket socket = null;
 	private static Logger logger = Logger.getLogger(ServerThread.class);
 	private static Logger cycleLogger = Logger.getLogger("CycleStatus");
-	private Protocol protocol;
 
 	private PrintWriter out;
 
@@ -30,7 +29,6 @@ public class ServerThread extends Thread {
 		super("ServerThread");
 		this.socket = socket;
 		connectedClientId = -1;
-		protocol = new Protocol();
 
 	}
 
@@ -153,7 +151,8 @@ public class ServerThread extends Thread {
 		} else {
 			id = serverThreadId + "";
 		}
-		return "Server(thread id:" + serverThreadId + ")";
+		
+		return "Server(thread id:" + id + ")";
 	}
 
 }

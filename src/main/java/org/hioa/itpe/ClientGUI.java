@@ -1,17 +1,13 @@
 package org.hioa.itpe;
 
 import java.io.File;
-import java.net.Socket;
-
-import org.apache.log4j.Logger;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
+import javafx.stage.*;
 
 /**
  * 
@@ -23,8 +19,6 @@ public class ClientGUI {
 	private ImageView displayedImage;
 	private final Client client;
 	private Thread thread;
-	private static Logger logger = Logger.getLogger(ClientGUI.class);
-	
 	/**
 	 * Constructor. Initializes a new Client.
 	 * @param hostIp

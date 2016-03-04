@@ -15,7 +15,7 @@ import javafx.concurrent.Task;
  * Container for all the server threads needed for a mulit-client setup
  *
  */
-public class Server extends Task {
+public class Server extends Task<Object>{
 	public static int portNumber = 8080;
 	public static String hostName = "127.0.0.1";
 	public static ServerThread serverThread;

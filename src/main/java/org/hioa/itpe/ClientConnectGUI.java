@@ -4,20 +4,18 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.commons.validator.routines.InetAddressValidator;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.log4j.Logger;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
-@SuppressWarnings("restriction")
 public class ClientConnectGUI {
 
 	private Stage stage;
@@ -104,11 +102,11 @@ public class ClientConnectGUI {
 				if (validIp && hostPort != -1) {
 					// If checkbox is selected:
 					logger.info("Creating new client: " + App.clientCounter);
-					ClientGUI clientGui = new ClientGUI(hostIp, hostPort);
+					new ClientGUI(hostIp, hostPort);
 					if (logCheckBox.isSelected()) {
 						if (parentGUI.getLogGui() != null) {
-							if (parentGUI.getLogGui().getStage() != null) {					
-							parentGUI.getLogGui().getStage().show();
+							if (parentGUI.getLogGui().getStage() != null) {
+								parentGUI.getLogGui().getStage().show();
 							}
 						} else {
 							LogGUI logGui = new LogGUI();
@@ -144,13 +142,19 @@ public class ClientConnectGUI {
 	}
 
 	private boolean validateIp(String ip) {
-		String validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
-		String validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
+
+		InetAddressValidator ipValidator = new InetAddressValidator();
+		UrlValidator urlValidator = new UrlValidator();
+
+		// String validIpAddressRegex =
+		// "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
+		// String validHostnameRegex =
+		// "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
 		boolean valid = false;
-		if (ip.matches(validIpAddressRegex)) { // valid
+		if (ipValidator.isValid(ip)) { // valid
 			ipInvalidLabel.setText("");
 			valid = true;
-		} else if (ip.matches(validHostnameRegex)) { // valid
+		} else if (urlValidator.isValid(ip)) { // valid
 			ipInvalidLabel.setText("");
 			valid = true;
 		} else { // invalid

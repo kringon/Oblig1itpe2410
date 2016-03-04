@@ -21,7 +21,6 @@ public class StringAppender extends AppenderSkeleton {
 
     public StringAppender(String name) {
         this.log = new ArrayDeque<String>();
-        int size = 1000;
         super.setName(name);
         events = new ArrayList<>();
     }
@@ -31,15 +30,15 @@ public class StringAppender extends AppenderSkeleton {
     	trimToSize();
     }
 
-    public ArrayDeque getLog() {
+    public ArrayDeque<String> getLog() {
         return log;
     }
     
-    public ArrayList getEvents() {
+    public ArrayList<LoggingEvent> getEvents() {
         return events;
     }
     
-    public void setEventList(ArrayList listToSet) {
+    public void setEventList(ArrayList<LoggingEvent> listToSet) {
     	listToSet = events;
     }
     
