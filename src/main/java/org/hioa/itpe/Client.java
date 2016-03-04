@@ -19,8 +19,8 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.stage.Stage;
 
+@SuppressWarnings({ "restriction", "rawtypes" })
 public class Client extends Task {
 
 	private Socket socket;
@@ -33,8 +33,6 @@ public class Client extends Task {
 	private int port;
 	private boolean selected;
 	private int id;
-	private String statusMessage;
-
 	private static Logger logger = LoggerFactory.getLogger(Client.class);
 
 	private int status;
@@ -48,12 +46,22 @@ public class Client extends Task {
 	private LightCycleTask cycleTask;
 	private LightFlashingTask flashingTask;
 
+	/**
+	 * Constructor to create a client
+	 * 
+	 * @param ip
+	 *            the IP to create a socket to
+	 * @param port
+	 *            the Port for the socket
+	 * @param dispImage
+	 *            the default image to be displayed
+	 * @param clientGUI
+	 *            the ClientGUI it belongs to
+	 */
 	public Client(String ip, int port, ImageView dispImage, ClientGUI clientGUI) {
 		this.ip = ip;
 		this.port = port;
 		this.displayedImage = dispImage;
-		this.statusMessage = "Standby";
-
 		this.status = 0;
 		this.cycle = false;
 
@@ -62,7 +70,10 @@ public class Client extends Task {
 		this.redInterval = 0;
 
 		this.clientGUI = clientGUI;
-		id = -1; // updated in updateFromServerJSON(String fromServer) method.
+		// Default value of ID to signify that it has not recieved the ID from
+		// the server yet. updated in updateFromServerJSON(String fromServer)
+		// method.
+		id = -1;
 		mapper = new ObjectMapper();
 	}
 
@@ -109,28 +120,18 @@ public class Client extends Task {
 				}
 			} catch (UnknownHostException e) {
 				logger.info("Don't know about host " + ip);
-				Platform.runLater(new Runnable() {
-					public void run() {
-						clientGUI.getStage().close(); // close "parent"
-														// clientGUI
-					}
-				});
+				Platform.runLater(() -> clientGUI.getStage().close());
 				this.cancel(); // cancel this thread
 			} catch (IOException e) {
 				logger.info("Couldn't get I/O for the connection to " + ip);
-
-				Platform.runLater(new Runnable() {
-					public void run() {
-						clientGUI.getStage().close(); // close "parent"
-														// clientGUI
-					}
+				// Close the platform if the connection fails
+				Platform.runLater(() -> {
+					clientGUI.getStage().close();
 				});
 				this.cancel(); // cancel this thread
 			}
 
 		}
-
-		// SocketComTask socketTask = new SocketComTask();
 
 		return null;
 	}
@@ -150,32 +151,35 @@ public class Client extends Task {
 		}
 	}
 
-	public void updateFromServerJSON(String fromServer) {
+	/**
+	 * Helper method to read the info from the server
+	 * 
+	 * @param fromServer
+	 *            the info recieved from the server
+	 */
+	private void updateFromServerJSON(String fromServer) {
 
-		ObjectMapper mapper = new ObjectMapper();
 		Message message;
 		try {
 			message = mapper.readValue(fromServer, Message.class);
 
+			// Set logic depending on what type of message it is
 			if (message.getMessageType() == Message.ACCEPT_ID_REQUEST) {
 
 				this.id = message.getClientId(); // Client now has id.
 				// Update title of Client GUI with id:
-				Platform.runLater(new Runnable() {
-					public void run() {
-						clientGUI.getStage().setTitle("Client: " + id);
-					}
+				Platform.runLater(() -> {
+					clientGUI.getStage().setTitle("Client: " + id);
 				});
 
 			} else if (message.getMessageType() == Message.ACCEPT_DISCONNECT) {
-
 				socket.shutdownInput();
 				socket.close();
 				logger.info("Closing client after server accept");
 				Thread.currentThread().interrupt();
 
 			} else {
-
+				// Default action if no other messageType is implemented
 				boolean inList = false;
 
 				if (message.getIdList() != null) {
@@ -233,8 +237,7 @@ public class Client extends Task {
 			}
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("There was an IOException reading info from the server: ", e.getMessage());
 		}
 	}
 
@@ -257,8 +260,7 @@ public class Client extends Task {
 		try {
 			out.println(mapper.writeValueAsString(message));
 		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("There was a JsonProcessingException: ", e.getMessage());
 		}
 	}
 
@@ -267,7 +269,6 @@ public class Client extends Task {
 		if (cycle) {
 			message += " (" + remainingCycleTime + "s)";
 		}
-		statusMessage = message;
 		sendStatusToServer(message);
 	}
 

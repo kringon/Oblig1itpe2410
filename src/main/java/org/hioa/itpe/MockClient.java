@@ -10,6 +10,12 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+/**
+ * Helper class to display the clients in the table at App.java
+ * Only holds / provides placeholders for the clients values in the table
+ * @author T820082
+ *
+ */
 public class MockClient {
 	
 	private StringProperty ip;

@@ -27,8 +27,9 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-
+@SuppressWarnings("restriction")
 public class ClientConnectGUI {
+	
 	private Stage stage;
 	private App parentGUI;
 
@@ -42,21 +43,19 @@ public class ClientConnectGUI {
 
 	public ClientConnectGUI(App parentGUI) {
 		this.parentGUI = parentGUI;
-
+		
 		stage = new Stage();
 		stage.setTitle("Create Client");
 		stage.show();
 
 		Scene scene = new Scene(createGridPane(), 500, 180);
 		stage.setScene(scene);
-		File file = new File("src/main/resources/AppStyle.css");
-
+		
 		try {
-			URL url = file.toURI().toURL();
+			URL url = new File("src/main/resources/AppStyle.css").toURI().toURL();
 			scene.getStylesheets().add(url.toExternalForm());
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Malformed URL: ", e.getMessage());
 		}
 		stage.setTitle("Create Client");
 		stage.setResizable(false);
@@ -64,8 +63,8 @@ public class ClientConnectGUI {
 
 	}
 
-	private GridPane createGridPane() {
 
+	private GridPane createGridPane() {
 		GridPane grid = new GridPane();
 		grid.setHgap(10);
 		grid.setVgap(12);
