@@ -23,8 +23,8 @@ import javafx.stage.Stage;
 
 /**
  * 
- * A simple GUI window showing the content of all loggers in a text area, with some options
- * for filtering the output.
+ * A simple GUI window showing the content of all loggers in a text area, with
+ * some options for filtering the output.
  *
  */
 public class LogGUI {
@@ -33,7 +33,7 @@ public class LogGUI {
 	private static Logger logger = Logger.getLogger(ClientConnectGUI.class);
 
 	private StringAppender stringAppender;
-	
+
 	private TextArea logTextArea;
 
 	private ArrayList<LoggingEvent> events;
@@ -42,12 +42,12 @@ public class LogGUI {
 	private CheckBox clientCb;
 	private CheckBox cycleCb;
 	private CheckBox warningsCb;
+	private CheckBox miscCb;
 	private SimpleDateFormat sf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	private volatile int indexOfLastLog = 0;
-	
 
 	public LogGUI() {
-		stringAppender = (StringAppender)Logger.getRootLogger().getAppender("String"); 
+		stringAppender = (StringAppender) Logger.getRootLogger().getAppender("String");
 
 		stage = new Stage();
 		stage.setTitle("Log");
@@ -71,48 +71,61 @@ public class LogGUI {
 				while (!Thread.currentThread().isInterrupted()) {
 					events = stringAppender.getEvents(); // Get events
 					try {
-						sleep(20); // sleep for 20 ms
+						sleep(100); // sleep for 100 ms
 					} catch (InterruptedException e) {
 						return;
 					}
-					// If any new events in the list that are not yet written to textArea, append with these:
+					// If any new events in the list that are not yet written to
+					// textArea, append with these:
 					if (events != null && events.size() > indexOfLastLog + 1) {
 						updateSelected(indexOfLastLog);
-										
+
 					}
-					
+
 				}
 			}
 		};
 		getEventsThread.start();
 
-
 	}
-	
-	// Helper method. Appends any new events to the text area, or if a new checkbox filter is applied, 
+
+	// Helper method. Appends any new events to the text area, or if a new
+	// checkbox filter is applied,
 	// the text area is rewritten from bottom to top with all events.
 	private void updateSelected(int startIndex) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = startIndex; i < events.size(); i++) {
-			if (events.get(i).getLoggerName().equals(ServerThread.class.getName()) && serverCb.isSelected()) {
-				appendEvent(sb, events.get(i));
-			} else if (events.get(i).getLoggerName().equals(Client.class.getName()) && clientCb.isSelected()) {
-				appendEvent(sb, events.get(i));
-			} else if (events.get(i).getLoggerName().equals("CycleStatus") && cycleCb.isSelected()) {
-				appendEvent(sb, events.get(i));
-			} else if ((events.get(i).getLevel().equals(Level.WARN) || events.get(i).getLevel().equals(Level.ERROR))
-					&& warningsCb.isSelected()) {
-				appendEvent(sb, events.get(i));
+			if (events.get(i).getLoggerName().equals(ServerThread.class.getName())) {
+				if (serverCb.isSelected()) {
+					appendEvent(sb, events.get(i));
+				}
+			} else if (events.get(i).getLoggerName().equals(Client.class.getName())) {
+				if (clientCb.isSelected()) {
+					appendEvent(sb, events.get(i));
+				}
+			} else if (events.get(i).getLoggerName().equals("CycleStatus")) {
+				if (cycleCb.isSelected()) {
+					appendEvent(sb, events.get(i));
+				}
+			} else if ((events.get(i).getLevel().equals(Level.WARN) || events.get(i).getLevel().equals(Level.ERROR))) {
+				if (warningsCb.isSelected()) {
+					appendEvent(sb, events.get(i));
+				}
+			} else {
+				if (miscCb.isSelected()) {
+					appendEvent(sb, events.get(i));
+				}
+
 			}
 		}
-		indexOfLastLog = events.size()-1;
+		indexOfLastLog = events.size() - 1;
 		if (startIndex == 0) {
-			logTextArea.setText((sb.toString()));	
+			logTextArea.setText((sb.toString()));
 		} else {
-			logTextArea.appendText((sb.toString()));		
+			logTextArea.appendText((sb.toString()));
 		}
 	}
-	
+
 	// Helper method. Appends an event to a sb, with proper format and fields.
 	private void appendEvent(StringBuilder sb, LoggingEvent event) {
 		sb.append(sf.format(event.getTimeStamp())).append(": ");
@@ -121,9 +134,10 @@ public class LogGUI {
 		sb.append(event.getRenderedMessage().toString());
 		sb.append("\n");
 	}
-	
+
 	/**
-	 * Initializes GUI content. Creates a GridPane containing all of the main content of this window.
+	 * Initializes GUI content. Creates a GridPane containing all of the main
+	 * content of this window.
 	 * 
 	 * @return main GridPane
 	 */
@@ -153,29 +167,36 @@ public class LogGUI {
 		serverCb.setText("Server");
 		serverCb.setSelected(true);
 		serverCb.setOnAction((ActionEvent ae) -> {
-			updateSelected(0);				
-		});	
+			updateSelected(0);
+		});
 
 		clientCb = new CheckBox();
 		clientCb.setText("Client(s)");
 		clientCb.setSelected(true);
 		clientCb.setOnAction((ActionEvent ae) -> {
-			updateSelected(0);				
-		});	
+			updateSelected(0);
+		});
 
 		cycleCb = new CheckBox();
 		cycleCb.setText("Light cycle updats from clients");
 		cycleCb.setSelected(false);
 		cycleCb.setOnAction((ActionEvent ae) -> {
-			updateSelected(0);			
-		});	
+			updateSelected(0);
+		});
 
 		warningsCb = new CheckBox();
 		warningsCb.setText("Warnings");
 		warningsCb.setSelected(false);
 		warningsCb.setOnAction((ActionEvent ae) -> {
 			updateSelected(0);
-		});	
+		});
+
+		miscCb = new CheckBox();
+		miscCb.setText("Miscellaneous");
+		miscCb.setSelected(false);
+		miscCb.setOnAction((ActionEvent ae) -> {
+			updateSelected(0);
+		});
 
 		// Grid arrangement:
 
@@ -189,10 +210,11 @@ public class LogGUI {
 		grid.add(clientCb, 0, 4);
 		grid.add(cycleCb, 0, 5);
 		grid.add(warningsCb, 0, 6);
+		grid.add(miscCb, 0, 7);
 
 		return grid;
 	}
-	
+
 	/**
 	 * 
 	 * @return this stage
