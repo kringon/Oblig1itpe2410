@@ -50,7 +50,6 @@ public class LogGUI {
 	
 
 	public LogGUI() {
-		this.parentGUI = parentGUI;
 		stringAppender = (StringAppender)Logger.getRootLogger().getAppender("String"); 
 
 		stage = new Stage();
@@ -69,7 +68,7 @@ public class LogGUI {
 		stage.setTitle("Log");
 		stage.setResizable(false);
 		stage.show();
-		Thread updateTableThread = new Thread() {
+		Thread getEventsThread = new Thread() {
 			@Override
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
@@ -77,8 +76,7 @@ public class LogGUI {
 					try {
 						sleep(20); // sleep for 20 ms
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						return;
 					}
 					// If any new events in the list that are not yet written to textArea, append with these:
 					if (events != null && events.size() > indexOfLastLog + 1) {
@@ -89,7 +87,7 @@ public class LogGUI {
 				}
 			}
 		};
-		updateTableThread.start();
+		getEventsThread.start();
 
 
 	}
