@@ -1,10 +1,12 @@
 package org.hioa.itpe;
 
 import java.net.*;
+import java.rmi.server.ServerCloneException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
@@ -12,7 +14,7 @@ import java.io.*;
 public class ServerThread extends Thread {
 
 	private int connectedClientId;
-
+	private int serverThreadId;
 	private Socket socket = null;
 	private static Logger logger = LoggerFactory.getLogger(ServerThread.class);
 	private Protocol protocol;
@@ -29,58 +31,71 @@ public class ServerThread extends Thread {
 	}
 
 	public void run() {
-		while (!Thread.currentThread().isInterrupted()) {
-
+		outerLoop: while (!Thread.currentThread().isInterrupted()) {
 			try {
 				out = new PrintWriter(socket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
 				String inputLine = "";
 
 				while ((inputLine = in.readLine()) != null) {
-					logger.info("Getting info from client(id: " + connectedClientId + "): " + inputLine);
 					ObjectMapper mapper = new ObjectMapper();
 					Message msg = mapper.readValue(inputLine, Message.class);
-
+					// Log content of input from client:
+					if (msg.getMessageType() == Message.SEND_CYCLE_STATUS) {
+						// logger.info(logId() + ": From client: " + inputLine);
+					} else {
+						logger.info(logId() + ": From client: " + inputLine);
+					}
+					// Process input according to our protocol to create an
+					// output:
 					Message output = Protocol.processClientOutput(msg);
 					if (output != null) {
 						if (output.getMessageType() == Message.ACCEPT_DISCONNECT) {
+							logger.info(logId() + " Sending accept disconnect request.");
 							out.println(mapper.writeValueAsString(output));
-							closeThread();
+							this.interrupt();
+							if (Thread.interrupted()) {
+								throw new InterruptedException();
+							}
+							// break outerLoop;
 
 						} else if (output.getMessageType() == Message.ACCEPT_ID_REQUEST) {
-							connectedClientId = output.getClientId();
+							logger.info(logId() + " Sending accept id request.");
+							out.println(mapper.writeValueAsString(output));
+							serverThreadId = connectedClientId = output.getClientId();
+
+						} else {
+							// out.println(mapper.writeValueAsString(output));
 						}
-						out.println(mapper.writeValueAsString(output));
 					}
 
 				}
 				if (!socket.isClosed() && inputLine == null) {
-					logger.warn("Connection closed abbruptly");
+					logger.warn(logId() + ": Connection closed abbruptly");
 					closeThread();
 				}
 
+			} catch (InterruptedException ie) {
+				closeThread();
+				logger.info(logId() + ": Closing thread.");
+				return;
 			} catch (IOException e1) {
-				logger.error(e1.getMessage());
+				logger.error(logId() + ": " + e1.getMessage());
 			}
 		}
 
 	}
 
 	/**
-	 * Updates this thread to a new protocol, and prints a new output from that protocol
-	 * @param protocol the protocol to set
+	 * Updates this thread to a new protocol, and prints a new output from that
+	 * protocol
+	 * 
+	 * @param protocol
+	 *            the protocol to set
 	 */
-	public void updateProtocol(Protocol protocol) {
-		this.protocol = protocol;
-		out.println(protocol.output());
-	}
-	
-	/**
-	 * Updates this thread to a new protocol, and prints a new output from that protocol
-	 * @param protocol the protocol to set
-	 */
-	public void output(String output) {
-		out.println(output);
+	public void output(Message message) {
+		logger.info(logId() + " Sending new status to client.");
+		out.println(message.toJSON());
 	}
 
 	public void printMessage(String message) {
@@ -93,26 +108,65 @@ public class ServerThread extends Thread {
 
 	/**
 	 * Helper method to close the current thread
+	 * 
 	 * @throws IOException
+	 * @throws InterruptedException
 	 */
-	private void closeThread() throws IOException {
-		socket.shutdownInput();
-		int index = -1;
+	private void closeThread() {
+		try {
+			if (!socket.isClosed()) {
+				logger.info(logId() + ": Shutting down socket input.");
+				socket.shutdownInput();
+				logger.info(logId() + ": Shutting down socket output.");
+				socket.shutdownOutput();
+				// Closes the communication socket
+				logger.info(logId() + ": Closing socket.");
+				socket.close();
+			}
+		} catch (IOException ioe) {
+			logger.warn(logId() + ": Attempting to close sockets failed. " + ioe.getMessage());
+		}
+		// Remove mock client from list in App
 		for (int i = 0; i < App.mockClientList.size(); i++) {
 			MockClient cli = App.mockClientList.get(i);
 			if (cli.getId() == connectedClientId) {
-				index = i;
+				logger.info(logId() + ": Removing mock client from App.");
+				App.mockClientList.remove(i);
+				App.updateMockClientTable(); // Update table of clients.
 			}
 		}
-		if (index != -1) {
-			App.mockClientList.remove(index);
-			App.updateMockClientTable();
+	}
 
+	/**
+	 * Helper method. Returns a String represenation of server thread id for use
+	 * by the logger.
+	 * 
+	 * @return
+	 */
+	private String logId() {
+		String id;
+		if (serverThreadId == -1) {
+			id = "Not connected";
+		} else {
+			id = serverThreadId + "";
 		}
-		socket.shutdownOutput();
-		socket.close();
-		this.interrupt();
+		return "Server(thread id:" + serverThreadId + ")";
+	}
 
+	//////////////////////////
+	// METHODS UNDER NOT IN USE
+	//////////////////////
+
+	/**
+	 * Updates this thread to a new protocol, and prints a new output from that
+	 * protocol
+	 * 
+	 * @param protocol
+	 *            the protocol to set
+	 */
+	public void updateProtocol(Protocol protocol) {
+		this.protocol = protocol;
+		out.println(protocol.output());
 	}
 
 }

@@ -48,8 +48,6 @@ public class Protocol {
 	// returns a JSON String
 	public String output() {
 		ObjectMapper mapper = new ObjectMapper();
-
-		//Message message = new Message(idList, status, greenInterval, yellowInterval, redInterval);
 		Message message = new Message();
 		message.setStatus(status);
 		if (status == CYCLE) {
@@ -111,6 +109,12 @@ public class Protocol {
 			return msg;
 
 		} else if (message.getMessageType() == Message.SEND_STATUS) {
+			MockClient mock = App.getMockClient(message.getClientId());
+			if (mock != null) {
+				mock.setStatusMessage(message.getStatusMessage());
+				App.updateMockClientTable();
+			}
+		} else if (message.getMessageType() == Message.SEND_CYCLE_STATUS) {
 			MockClient mock = App.getMockClient(message.getClientId());
 			if (mock != null) {
 				mock.setStatusMessage(message.getStatusMessage());

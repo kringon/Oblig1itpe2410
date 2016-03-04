@@ -9,6 +9,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.javafx.scene.control.skin.TableViewSkinBase;
 
 import javafx.application.Application;
@@ -516,7 +517,28 @@ public class App extends Application {
 	 * @param status
 	 */
 	private void handleStatusButtonClick(int status) {
-		logger.info("Setting all selected clients " + Protocol.statusToString(status));
+		
+		
+		ObjectMapper mapper = new ObjectMapper();
+		Message message = new Message();
+		message.setStatus(status);
+		if (status == Protocol.CYCLE) {
+			message.setGreenInterval(greenSpinner.getValue());
+			message.setYellowInterval(yellowSpinner.getValue());
+			message.setRedInterval(redSpinner.getValue());
+		}
+		if (server == null) {
+			logger.warn("Server not yet created");
+		} else if (mockClientList.isEmpty()) {
+			logger.warn("No clients connected to server");
+		} else if (getSelectedClientIds().isEmpty()) {
+			logger.warn("No clients selected from the table");
+		}else {
+			server.updateThreads(message, getSelectedClientIds());
+			logger.info("Setting all selected clients " + Protocol.statusToString(status));
+		}
+		
+		/*
 		Protocol prot = new Protocol();
 		prot.setStatus(status);
 		prot.setIdList(getSelectedClientIds());
@@ -524,7 +546,9 @@ public class App extends Application {
 			prot.setInterval(greenSpinner.getValue(), yellowSpinner.getValue(), redSpinner.getValue());
 		}
 		//server.updateAllThreads(prot);
-		server.updateThreads(prot, getSelectedClientIds());
+		 * server.updateThreads(prot, getSelectedClientIds());
+		 */
+		
 
 	}
 

@@ -3,6 +3,8 @@ package org.hioa.itpe;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Message {
@@ -13,13 +15,14 @@ public class Message {
 
 	// Messagetypes
 	public static final int REQUEST_ID = 1;
-	public static final int ACCEPT_ID_REQUEST = 6;
-	public static final int ID_RECEIVED = 4;
-	public static final int SEND_STATUS = 2;
-	public static final int PROPOSE_DISCONNECT = 3;
-	public static final int ACCEPT_DISCONNECT = 5;
-	public static final int DISCONNECTED = 7;
-	public static final int CLOSED = 8;
+	public static final int ACCEPT_ID_REQUEST = 2;
+	public static final int ID_RECEIVED = 3;
+	public static final int SEND_STATUS = 4;
+	public static final int SEND_CYCLE_STATUS = 5;
+	public static final int PROPOSE_DISCONNECT = 6;
+	public static final int ACCEPT_DISCONNECT = 7;
+	public static final int DISCONNECTED = 8;
+	public static final int CLOSED = 9;
 
 
 
@@ -159,5 +162,21 @@ public class Message {
 
 	public void setMessageType(int messageType) {
 		this.messageType = messageType;
+	}
+	
+	/**
+	 * Returns a JSON String of this message.
+	 * @param message
+	 * @return JSON String of this message
+	 */
+	public String toJSON() {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			return mapper.writeValueAsString(this);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
 	}
 }

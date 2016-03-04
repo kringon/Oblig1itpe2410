@@ -101,35 +101,22 @@ public class Client extends Task {
 				Message message = new Message(InetAddress.getLocalHost().getHostAddress(), port);
 				message.setMessageType(Message.REQUEST_ID);
 				out.println(mapper.writeValueAsString(message));
+				logger.info(logId() + ": Sending request id to server.");
 
 				// Keep reading server output
 				while ((fromServer = in.readLine()) != null) {
-					logger.info("Client(id:" + id + "): " + 
-							"FromServer: " + fromServer);
-
-					int tempStatus = this.status;
-
+					logger.info(logId() + ": FromServer: " + fromServer);
+					
+					// Update client depending on the input from server:
 					updateFromServerJSON(fromServer);
-
-					// Status has changed depending on input from server
-					if (tempStatus != this.status) {
-						Message msg = new Message();
-						msg.setMessage("Status was updated");
-						msg.setMessageType(Message.SEND_STATUS);
-						msg.setStatus(this.status);
-						msg.setClientId(this.getId());
-						String sentMessage = mapper.writeValueAsString(msg);
-						out.println(sentMessage);
-						logger.info("Sending to server: " + sentMessage);
-					}
 
 				}
 			} catch (UnknownHostException e) {
-				logger.info("Don't know about host " + ip);
+				logger.info(logId() + ": Don't know about host " + ip);
 				Platform.runLater(() -> clientGUI.getStage().close());
 				this.cancel(); // cancel this thread
 			} catch (IOException e) {
-				logger.info("Couldn't get I/O for the connection to " + ip);
+				logger.info(logId() + ": Couldn't get I/O for the connection to " + ip);
 				// Close the platform if the connection fails
 				Platform.runLater(() -> {
 					clientGUI.getStage().close();
@@ -153,7 +140,7 @@ public class Client extends Task {
 
 			Message msg = new Message();
 			msg.setMessageType(Message.PROPOSE_DISCONNECT);
-			msg.setClientId(this.getId());
+			logger.info(logId() + ": Sending propose disconnect to server.");
 			out.println(mapper.writeValueAsString(msg));
 			socket.shutdownOutput();
 
@@ -196,7 +183,7 @@ public class Client extends Task {
 			} else if (message.getMessageType() == Message.ACCEPT_DISCONNECT) {
 				socket.shutdownInput();
 				socket.close();
-				logger.info("Client(id:" + id + "): " + "Closing client after server accept");
+				logger.info("Client(id:" + id + "): " + "Closing client after server disconnect aknowledgment");
 				Thread.currentThread().interrupt();
 
 			} else {
@@ -225,6 +212,7 @@ public class Client extends Task {
 
 					cycleTask = new LightCycleTask();
 					cycleTask.start();
+					sendStatusToServer();
 				} else if (statusFromServer == Protocol.FLASHING) {
 					this.cycle = false;
 					if (cycleTask.isAlive()) {
@@ -237,6 +225,7 @@ public class Client extends Task {
 
 					flashingTask = new LightFlashingTask();
 					flashingTask.start();
+					sendStatusToServer();
 
 				} else {
 					this.cycle = false;
@@ -247,14 +236,15 @@ public class Client extends Task {
 						flashingTask.interrupt();
 					}
 					this.status = statusFromServer;
-					updateStatusMessage(0);
+					sendStatusToServer();
 					updateImage();
 				}
 
 			}
 
 		} catch (IOException e) {
-			logger.error("Client(id:" + id + "): " + "There was an IOException reading info from the server: ", e.getMessage());
+			logger.error("Client(id:" + id + "): " + "There was an IOException reading info from the server: ",
+					e.getMessage());
 		}
 	}
 
@@ -263,15 +253,25 @@ public class Client extends Task {
 	}
 
 	// Send status message:
-	public void sendStatusToServer(String statusMessage) {
-		ObjectMapper mapper = new ObjectMapper();
-
+	public void sendStatusToServer() {
+		String statusMessage = Protocol.statusToString(this.status);
 		Message message = new Message();
 		message.setMessageType(Message.SEND_STATUS);
-		message.setIp(ip);
-		message.setPort(port);
-		message.setClientId(id);
 		message.setStatus(status);
+		message.setStatusMessage(statusMessage);
+
+		String jsonMsg = message.toJSON();
+		out.println(jsonMsg);
+		logger.info(logId() + "Sending aknowledgement of status change to server: " + jsonMsg);
+	}
+
+	private void sendCycleStatusToServer(int remainingCycleTime) {
+
+		ObjectMapper mapper = new ObjectMapper();
+		Message message = new Message();
+		message.setMessageType(Message.SEND_CYCLE_STATUS);
+		message.setStatus(status);
+		String statusMessage = Protocol.statusToString(this.status) + " (" + remainingCycleTime + "s)";
 		message.setStatusMessage(statusMessage);
 
 		try {
@@ -279,14 +279,7 @@ public class Client extends Task {
 		} catch (JsonProcessingException e) {
 			logger.error("Client(id:" + id + "): " + "There was a JsonProcessingException: ", e.getMessage());
 		}
-	}
 
-	private void updateStatusMessage(int remainingCycleTime) {
-		String message = Protocol.statusToString(this.status);
-		if (cycle) {
-			message += " (" + remainingCycleTime + "s)";
-		}
-		sendStatusToServer(message);
 	}
 
 	// Updates the displayed traffic light image (uses field variable)
@@ -331,9 +324,24 @@ public class Client extends Task {
 		return status;
 	}
 
+	/**
+	 * Helper method. Returns a String representation of client id for use by
+	 * the logger.
+	 * 
+	 * @return
+	 */
+	private String logId() {
+		String id;
+		if (this.id == -1) {
+			id = "Not connected";
+		} else {
+			id = this.id + "";
+		}
+		return "Client(id:" + id + ")";
+	}
+
 	private class LightCycleTask extends Thread {
 
-		
 		@Override
 		public void run() {
 			// Counters for the cycle:
@@ -359,7 +367,7 @@ public class Client extends Task {
 					}
 					updateImage(); // update displayed image
 					while (yellowCounter < yellowInterval) {
-						updateStatusMessage(yellowInterval - yellowCounter);
+						sendCycleStatusToServer(yellowInterval - yellowCounter);
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
@@ -376,7 +384,7 @@ public class Client extends Task {
 					updateImage(); // update displayed image
 					yellowCounter = 0; // reset yellow counter.
 					while (greenCounter < greenInterval) {
-						updateStatusMessage(greenInterval - greenCounter);
+						sendCycleStatusToServer(greenInterval - greenCounter);
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
@@ -393,7 +401,7 @@ public class Client extends Task {
 					updateImage(); // update displayed image
 					yellowCounter = 0; // reset yellow counter.
 					while (redCounter < redInterval) {
-						updateStatusMessage(redInterval - redCounter);
+						sendCycleStatusToServer(redInterval - redCounter);
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
@@ -417,7 +425,6 @@ public class Client extends Task {
 		public void run() {
 
 			boolean yellowOn = false; // used by status: Flashing
-			updateStatusMessage(0);
 			while (!Thread.currentThread().isInterrupted()) {
 
 				// Switch to NONE (if previous status = on)

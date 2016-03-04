@@ -36,7 +36,7 @@ public class Server extends Task {
 
 		boolean listening = true;
 
-		try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
+		try (ServerSocket serverSocket = new ServerSocket(portNumber);){
 			while (listening) {
 				ServerThread thread = new ServerThread(serverSocket.accept());
 				thread.start();
@@ -66,11 +66,11 @@ public class Server extends Task {
 	}
 
 	// Updates the selected servers.
-	public void updateThreads(Protocol protocol, List<Integer> clientIds) {
+	public void updateThreads(Message message, List<Integer> clientIds) {
 		for (int clientId : clientIds) {
 			for (ServerThread thread : serverThreads) {
 				if (thread.getConnectedClientId() == clientId) {
-					thread.output(protocol.output());
+					thread.output(message);
 				}
 			}
 
