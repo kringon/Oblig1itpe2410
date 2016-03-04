@@ -1,6 +1,6 @@
 package org.hioa.itpe;
 
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.beans.property.BooleanProperty;
@@ -24,7 +24,7 @@ public class MockClient {
 	private IntegerProperty id;
 	private StringProperty statusMessage;
 	
-	private static Logger logger = LoggerFactory.getLogger(Client.class);
+	private static Logger logger = Logger.getLogger(Client.class);
 	
 	// Default constructor necessary for TableView:
 	public MockClient() {

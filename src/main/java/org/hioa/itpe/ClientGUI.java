@@ -3,7 +3,7 @@ package org.hioa.itpe;
 import java.io.File;
 import java.net.Socket;
 
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.event.EventHandler;
@@ -20,7 +20,7 @@ public class ClientGUI {
 	private Socket socket = null;
 	private final Client client;
 	private Thread thread;
-	private static Logger logger = LoggerFactory.getLogger(ClientGUI.class);
+	private static Logger logger = Logger.getLogger(ClientGUI.class);
 
 	public ClientGUI(String hostIp, int hostPort) {
 

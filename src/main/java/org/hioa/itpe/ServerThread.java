@@ -3,8 +3,10 @@ package org.hioa.itpe;
 import java.net.*;
 import java.rmi.server.ServerCloneException;
 
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.slf4j.LoggerFactory;
+
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +18,8 @@ public class ServerThread extends Thread {
 	private int connectedClientId;
 	private int serverThreadId;
 	private Socket socket = null;
-	private static Logger logger = LoggerFactory.getLogger(ServerThread.class);
+	private static Logger logger = Logger.getLogger(ServerThread.class);
+	private static Logger cycleLogger = Logger.getLogger("CycleStatus");
 	private Protocol protocol;
 
 	private PrintWriter out;
@@ -36,13 +39,12 @@ public class ServerThread extends Thread {
 				out = new PrintWriter(socket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
 				String inputLine = "";
-
 				while ((inputLine = in.readLine()) != null) {
 					ObjectMapper mapper = new ObjectMapper();
 					Message msg = mapper.readValue(inputLine, Message.class);
 					// Log content of input from client:
 					if (msg.getMessageType() == Message.SEND_CYCLE_STATUS) {
-						// logger.info(logId() + ": From client: " + inputLine);
+						cycleLogger.info(logId() + ": From client: " + inputLine);
 					} else {
 						logger.info(logId() + ": From client: " + inputLine);
 					}

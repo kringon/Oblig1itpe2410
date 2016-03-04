@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,7 +68,8 @@ public class App extends Application {
 
 	// Logger to output data to console (easliy expanded to a separate
 	// log-window or file-logging
-	private static Logger logger = LoggerFactory.getLogger(App.class);
+	private static Logger logger = Logger.getLogger(App.class);
+	private LogGUI logGui;
 
 	// Server variables
 	private Server server;
@@ -77,9 +78,14 @@ public class App extends Application {
 
 	/**
 	 * @param args
-	 *            the command line arguments. Not used in this app.
+	 *            the command line arguments.
 	 */
 	public static void main(String[] args) {
+		// Create custom appender for loggers
+		StringAppender stringAppender = new StringAppender("String");
+		// Add to root logger
+		Logger.getRootLogger().addAppender(stringAppender);
+		// Start GUI
 		launch(App.class, args);
 	}
 
@@ -114,7 +120,7 @@ public class App extends Application {
 			URL url = new File("src/main/resources/AppStyle.css").toURI().toURL();
 			scene.getStylesheets().add(url.toExternalForm());
 		} catch (MalformedURLException e) {
-			logger.error("Malformed URL: ", e.getMessage());
+			logger.error("Malformed URL: " +  e.getMessage());
 		}
 
 		// Quit the entire program when closing the App
@@ -164,10 +170,26 @@ public class App extends Application {
 			btnStart.setDisable(true);
 			btnCreate.setDisable(false);
 		});
+		
+		final Button btnLog = new Button("View log");
+		btnLog.setPrefSize(100, 20);
+		btnLog.getStyleClass().add("button-start");
+		btnLog.setOnAction((ActionEvent ae) -> {
+			logger.info("Opening up log");
+			logGui = new LogGUI();
+		});
 
 		// Add buttons to the hbox and return it
-		hbox.getChildren().addAll(btnStart, btnCreate);
+		hbox.getChildren().addAll(btnStart, btnCreate, btnLog);
 		return hbox;
+	}
+	
+	public LogGUI getLogGui() {
+		return logGui;
+	}
+	
+	public void setLogGui(LogGUI logGui) {
+		this.logGui = logGui;
 	}
 
 	/**
@@ -296,8 +318,7 @@ public class App extends Application {
 					try {
 						sleep(250);
 					} catch (InterruptedException e) {
-						logger.error("Updating table thread was interrupted: ", e.getMessage());
-						Thread.currentThread().interrupt();
+						logger.error("Updating table thread was interrupted: " + e.getMessage());
 						return;
 					}
 					clientTable.getProperties().put(TableViewSkinBase.RECREATE, Boolean.TRUE); // refresh
@@ -407,6 +428,7 @@ public class App extends Application {
 		redManBtn.getStyleClass().add("button-set");
 		redManBtn.setMaxWidth(Double.MAX_VALUE);
 		redManBtn.setOnAction((ActionEvent ae) -> {
+			
 			handleStatusButtonClick(Protocol.RED);
 		});
 

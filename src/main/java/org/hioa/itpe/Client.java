@@ -9,7 +9,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,7 +33,7 @@ public class Client extends Task {
 	private int port;
 	private boolean selected;
 	private int id;
-	private static Logger logger = LoggerFactory.getLogger(Client.class);
+	private static Logger logger = Logger.getLogger(Client.class);
 
 	private int status;
 	private boolean cycle;
@@ -243,7 +243,7 @@ public class Client extends Task {
 			}
 
 		} catch (IOException e) {
-			logger.error("Client(id:" + id + "): " + "There was an IOException reading info from the server: ",
+			logger.error("Client(id:" + id + "): " + "There was an IOException reading info from the server: " +
 					e.getMessage());
 		}
 	}
@@ -277,7 +277,7 @@ public class Client extends Task {
 		try {
 			out.println(mapper.writeValueAsString(message));
 		} catch (JsonProcessingException e) {
-			logger.error("Client(id:" + id + "): " + "There was a JsonProcessingException: ", e.getMessage());
+			logger.error("Client(id:" + id + "): " + "There was a JsonProcessingException: " + e.getMessage());
 		}
 
 	}

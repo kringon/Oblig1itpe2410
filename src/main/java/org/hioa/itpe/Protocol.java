@@ -8,7 +8,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Protocol {
 
-	private static Logger logger = LoggerFactory.getLogger(Protocol.class);
+	private static Logger logger = Logger.getLogger(Protocol.class);
 
 	public static final int NONE = 1;
 	public static final int GREEN = 2;
@@ -158,7 +158,7 @@ public class Protocol {
 			return mapper.writeValueAsString(message);
 
 		} catch (JsonProcessingException e) {
-			logger.error("Failed to parse to Json: ", e.getLocalizedMessage());
+			logger.error("Failed to parse to Json: " + e.getLocalizedMessage());
 		}
 
 		return "failed to produce message";

@@ -6,7 +6,7 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.beans.value.ObservableValue;
@@ -27,13 +27,14 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
 @SuppressWarnings("restriction")
 public class ClientConnectGUI {
-	
+
 	private Stage stage;
 	private App parentGUI;
 
-	private static Logger logger = LoggerFactory.getLogger(ClientConnectGUI.class);
+	private static Logger logger = Logger.getLogger(ClientConnectGUI.class);
 
 	private Label ipInvalidLabel;
 	private Label portInvalidLabel;
@@ -43,26 +44,25 @@ public class ClientConnectGUI {
 
 	public ClientConnectGUI(App parentGUI) {
 		this.parentGUI = parentGUI;
-		
+
 		stage = new Stage();
 		stage.setTitle("Create Client");
 		stage.show();
 
 		Scene scene = new Scene(createGridPane(), 500, 180);
 		stage.setScene(scene);
-		
+
 		try {
 			URL url = new File("src/main/resources/AppStyle.css").toURI().toURL();
 			scene.getStylesheets().add(url.toExternalForm());
 		} catch (MalformedURLException e) {
-			logger.error("Malformed URL: ", e.getMessage());
+			logger.error("Malformed URL: " + e.getMessage());
 		}
 		stage.setTitle("Create Client");
 		stage.setResizable(false);
 		stage.show();
 
 	}
-
 
 	private GridPane createGridPane() {
 		GridPane grid = new GridPane();
@@ -83,22 +83,20 @@ public class ClientConnectGUI {
 
 		ipField = new TextField(Server.hostName);
 		ipField.setPrefColumnCount(20);
-		
+
 		ipField.textProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue.equals(oldValue) && !ipInvalidLabel.equals("")) {
 				ipInvalidLabel.setText("");
 			}
 		});
-		
 
 		portField = new TextField(Server.portNumber + "");
-		
+
 		portField.textProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue.equals(oldValue) && !portInvalidLabel.equals("")) {
 				portInvalidLabel.setText("");
 			}
 		});
-		
 
 		final CheckBox logCheckBox = new CheckBox();
 		Label checkBoxLabel = new Label("Open log on connect");
@@ -119,11 +117,14 @@ public class ClientConnectGUI {
 					logger.info("Creating new client: " + App.clientCounter);
 					ClientGUI clientGui = new ClientGUI(hostIp, hostPort);
 					if (logCheckBox.isSelected()) {
-						/*
-						 * log not implemented yet if (parentGUI.getLogGUI() ==
-						 * null) { parentGui.createLogGUI(); } else {
-						 * parentGUI.getLogGUI().getStage().toFront(); }
-						 */
+						if (parentGUI.getLogGui() != null) {
+							if (parentGUI.getLogGui().getStage() != null) {					
+							parentGUI.getLogGui().getStage().show();
+							}
+						} else {
+							LogGUI logGui = new LogGUI();
+							parentGUI.setLogGui(logGui);
+						}
 
 					}
 					stage.close(); // close this window

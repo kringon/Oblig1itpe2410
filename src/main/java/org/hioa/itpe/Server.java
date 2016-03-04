@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
@@ -17,7 +17,7 @@ public class Server extends Task {
 	public static int portNumber = 8080;
 	public static String hostName = "127.0.0.1";
 	public static ServerThread serverThread;
-	private static Logger logger = LoggerFactory.getLogger(Server.class);
+	private static Logger logger = Logger.getLogger(Server.class);
 	private static List<ServerThread> serverThreads = new ArrayList<ServerThread>();
 
 	private String ipAddress;
