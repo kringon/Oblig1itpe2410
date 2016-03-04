@@ -1,17 +1,15 @@
 package org.hioa.itpe;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 
 import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.WriterAppender;
 import org.apache.log4j.spi.LoggingEvent;
-import org.apache.logging.log4j.Level;
 
-
+/**
+ * Custom subclass of AppenderSkeleton. Used by LogGUI to access logger information.
+ *
+ */
 public class StringAppender extends AppenderSkeleton {
 
     private ArrayDeque<String> log;
@@ -44,7 +42,10 @@ public class StringAppender extends AppenderSkeleton {
     public void setEventList(ArrayList listToSet) {
     	listToSet = events;
     }
-
+    
+    /**
+     * Appends an event to ArrayList events.
+     */
     @Override
 	public void append(LoggingEvent event) {
     	/*

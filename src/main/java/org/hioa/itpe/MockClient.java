@@ -1,7 +1,6 @@
 package org.hioa.itpe;
 
 import org.apache.log4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;

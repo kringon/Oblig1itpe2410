@@ -1,45 +1,32 @@
 package org.hioa.itpe;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.ThreadContext;
-import org.slf4j.LoggerFactory;
-
-import com.sun.javafx.scene.control.skin.TableViewSkinBase;
-
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
 
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
+/**
+ * 
+ * A simple GUI window showing the content of all loggers in a text area, with some options
+ * for filtering the output.
+ *
+ */
 @SuppressWarnings("restriction")
 public class LogGUI {
 
@@ -61,9 +48,7 @@ public class LogGUI {
 	private SimpleDateFormat sf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	private volatile int indexOfLastLog = 0;
 	
-	/**
-	 * Shows the content of all loggers in a seperate window with a text area.
-	 */
+
 	public LogGUI() {
 		this.parentGUI = parentGUI;
 		stringAppender = (StringAppender)Logger.getRootLogger().getAppender("String"); 

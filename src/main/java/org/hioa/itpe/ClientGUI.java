@@ -4,7 +4,6 @@ import java.io.File;
 import java.net.Socket;
 
 import org.apache.log4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -22,7 +21,6 @@ import javafx.stage.WindowEvent;
 public class ClientGUI {
 	private Stage stage;
 	private ImageView displayedImage;
-	private Socket socket = null;
 	private final Client client;
 	private Thread thread;
 	private static Logger logger = Logger.getLogger(ClientGUI.class);

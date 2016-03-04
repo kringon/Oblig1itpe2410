@@ -1,16 +1,14 @@
 package org.hioa.itpe;
 
-import java.net.*;
-import java.rmi.server.ServerCloneException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
 import org.apache.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.*;
 
 /**
  * Created when matching input from a new client. Implements logic to ensure
