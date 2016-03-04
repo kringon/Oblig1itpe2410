@@ -250,6 +250,7 @@ public class Client extends Task {
 		String statusMessage = Protocol.statusToString(this.status);
 		Message message = new Message();
 		message.setMessageType(Message.SEND_STATUS);
+		message.setClientId(id);
 		message.setStatus(status);
 		message.setStatusMessage(statusMessage);
 
