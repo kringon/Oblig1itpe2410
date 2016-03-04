@@ -255,7 +255,7 @@ public class Client extends Task {
 
 		String jsonMsg = message.toJSON();
 		out.println(jsonMsg);
-		logger.info(logId() + "Sending aknowledgement of status change to server: " + jsonMsg);
+		logger.info(logId() + ": Sending aknowledgement of status change to server: " + jsonMsg);
 	}
 
 	private void sendCycleStatusToServer(int remainingCycleTime) {
@@ -270,18 +270,24 @@ public class Client extends Task {
 		try {
 			out.println(mapper.writeValueAsString(message));
 		} catch (JsonProcessingException e) {
-			logger.error("Client(id:" + id + "): " + "There was a JsonProcessingException: " + e.getMessage());
+			logger.error(logId() + ": There was a JsonProcessingException: " + e.getMessage());
 		}
 
 	}
 
-	// Updates the displayed traffic light image (uses field variable)
+	/**
+	 * Updates the displayed traffic light image using the field value of this class.
+	 */
 	public void updateImage() {
 		updateImage(this.status);
 
 	}
 
-	// Updates the displayed traffic light image (uses paramater variable)
+	
+	/**
+	 * Updates the displayed traffic light image using paramater status
+	 * @param status to update to
+	 */
 	public void updateImage(int status) {
 
 		if (status == Protocol.GREEN) {

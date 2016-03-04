@@ -36,7 +36,7 @@ public class LogGUI {
 
 	private TextArea logTextArea;
 
-	private ArrayList<LoggingEvent> events;
+	private ArrayList<LoggingEvent> logEvents; // List of logger events
 
 	private CheckBox serverCb;
 	private CheckBox clientCb;
@@ -47,6 +47,7 @@ public class LogGUI {
 	private volatile int indexOfLastLog = 0;
 
 	public LogGUI() {
+		// Get Appender from Root logger:
 		stringAppender = (StringAppender) Logger.getRootLogger().getAppender("String");
 
 		stage = new Stage();
@@ -69,7 +70,7 @@ public class LogGUI {
 			@Override
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
-					events = stringAppender.getEvents(); // Get events
+					logEvents = stringAppender.getEvents(); // Get events
 					try {
 						sleep(100); // sleep for 100 ms
 					} catch (InterruptedException e) {
@@ -77,7 +78,7 @@ public class LogGUI {
 					}
 					// If any new events in the list that are not yet written to
 					// textArea, append with these:
-					if (events != null && events.size() > indexOfLastLog + 1) {
+					if (logEvents != null && logEvents.size() > indexOfLastLog + 1) {
 						updateSelected(indexOfLastLog);
 
 					}
@@ -94,31 +95,31 @@ public class LogGUI {
 	// the text area is rewritten from bottom to top with all events.
 	private void updateSelected(int startIndex) {
 		StringBuilder sb = new StringBuilder();
-		for (int i = startIndex; i < events.size(); i++) {
-			if (events.get(i).getLoggerName().equals(ServerThread.class.getName())) {
+		for (int i = startIndex; i < logEvents.size(); i++) {
+			if (logEvents.get(i).getLoggerName().equals(ServerThread.class.getName())) {
 				if (serverCb.isSelected()) {
-					appendEvent(sb, events.get(i));
+					appendEvent(sb, logEvents.get(i));
 				}
-			} else if (events.get(i).getLoggerName().equals(Client.class.getName())) {
+			} else if (logEvents.get(i).getLoggerName().equals(Client.class.getName())) {
 				if (clientCb.isSelected()) {
-					appendEvent(sb, events.get(i));
+					appendEvent(sb, logEvents.get(i));
 				}
-			} else if (events.get(i).getLoggerName().equals("CycleStatus")) {
+			} else if (logEvents.get(i).getLoggerName().equals("CycleStatus")) {
 				if (cycleCb.isSelected()) {
-					appendEvent(sb, events.get(i));
+					appendEvent(sb, logEvents.get(i));
 				}
-			} else if ((events.get(i).getLevel().equals(Level.WARN) || events.get(i).getLevel().equals(Level.ERROR))) {
+			} else if ((logEvents.get(i).getLevel().equals(Level.WARN) || logEvents.get(i).getLevel().equals(Level.ERROR))) {
 				if (warningsCb.isSelected()) {
-					appendEvent(sb, events.get(i));
+					appendEvent(sb, logEvents.get(i));
 				}
 			} else {
 				if (miscCb.isSelected()) {
-					appendEvent(sb, events.get(i));
+					appendEvent(sb, logEvents.get(i));
 				}
 
 			}
 		}
-		indexOfLastLog = events.size() - 1;
+		indexOfLastLog = logEvents.size() - 1;
 		if (startIndex == 0) {
 			logTextArea.setText((sb.toString()));
 		} else {
