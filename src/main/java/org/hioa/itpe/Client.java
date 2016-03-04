@@ -76,7 +76,11 @@ public class Client extends Task {
 		id = -1;
 		mapper = new ObjectMapper();
 	}
-
+	
+	/**
+	 * Invoked upon creation of the client thread. Similar to run(). Attempts a server connection
+	 * upon creation, and listens to any incoming server messages.
+	 */
 	@Override
 	protected Object call() throws Exception {
 
@@ -135,8 +139,12 @@ public class Client extends Task {
 
 		return null;
 	}
-
-	public void closeSocket() {
+	
+	/**
+	 * Sends a propose disconnect message to server, and shuts down any further output to server.
+	 * @see java.net.Socket#close()
+	 */
+	public void closeSocketOutput() {
 		try {
 
 			Message msg = new Message();
@@ -152,7 +160,10 @@ public class Client extends Task {
 	}
 
 	/**
-	 * Helper method to read the info from the server
+	 * Helper method to read the info from the server. 
+	 * <p>
+	 * Converts the String of text from the server into a Message object
+	 * and updates client and output message depending.
 	 * 
 	 * @param fromServer
 	 *            the info recieved from the server
@@ -171,6 +182,12 @@ public class Client extends Task {
 				Platform.runLater(() -> {
 					clientGUI.getStage().setTitle("Client: " + id);
 				});
+				// Send acknowledgment of received id to server.
+				Message outMsg = new Message();
+				outMsg.setMessageType(Message.ID_RECEIVED);
+				String outJSON = mapper.writeValueAsString(outMsg);
+				out.println(outJSON);
+				logger.info("Sending to server acknowledgment of id: " + outJSON);
 
 			} else if (message.getMessageType() == Message.ACCEPT_DISCONNECT) {
 				socket.shutdownInput();

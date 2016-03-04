@@ -524,6 +524,7 @@ public class App extends Application {
 			prot.setInterval(greenSpinner.getValue(), yellowSpinner.getValue(), redSpinner.getValue());
 		}
 		server.updateAllThreads(prot);
+		//server.updateThreads(prot, getSelectedClientIds());
 
 	}
 

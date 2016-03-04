@@ -36,7 +36,7 @@ public class Protocol {
 	private int yellowInterval = 0;
 	private int redInterval = 0;
 	// private int intersection;
-
+	
 	private List<Integer> idList;
 
 	public Protocol() {

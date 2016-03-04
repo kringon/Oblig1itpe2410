@@ -19,9 +19,9 @@ public class Server extends Task {
 	public static ServerThread serverThread;
 	private static Logger logger = LoggerFactory.getLogger(Server.class);
 	private static List<ServerThread> serverThreads = new ArrayList<ServerThread>();
-	
+
 	private String ipAddress;
-	
+
 	public Server() {
 		try {
 			ipAddress = InetAddress.getLocalHost().getHostAddress();
@@ -30,10 +30,10 @@ public class Server extends Task {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	protected Object call() throws Exception {
-		
+
 		boolean listening = true;
 
 		try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
@@ -64,11 +64,26 @@ public class Server extends Task {
 			}
 		}
 	}
-	
-	// Update ServerThread with new protocol and send a message of the protocol to out.println
+
+	// THE ONE IN USE:
+	// Update ServerThread with new protocol and send a message of the protocol
+	// to out.println
 	public void updateAllThreads(Protocol protocol) {
 		for (ServerThread thread : serverThreads) {
 			thread.updateProtocol(protocol);
+		}
+	}
+
+	// Only updates the selected servers.
+	public void updateThreads(Protocol protocol, List<Integer> clientIds) {
+		for (int clientId : clientIds) {
+			for (ServerThread thread : serverThreads) {
+				if (thread.getConnectedClientId() == clientId) {
+					thread.updateProtocol(protocol);
+				}
+			}
+				
+				
 		}
 	}
 
@@ -78,14 +93,14 @@ public class Server extends Task {
 			thread.printMessage(message);
 		}
 	}
-	
+
 	public String getIpAddress() {
 		return ipAddress;
 	}
-	
-	public static void removeThread( long l){
-		for(int i=0; i< serverThreads.size(); i++){
-			if(serverThreads.get(i).getId() == l){
+
+	public static void removeThread(long l) {
+		for (int i = 0; i < serverThreads.size(); i++) {
+			if (serverThreads.get(i).getId() == l) {
 				serverThreads.get(i).interrupt();
 			}
 		}
