@@ -79,40 +79,4 @@ public class Server extends Task<Object>{
 		}
 	}
 
-	////////////////////////////////////////////
-	// METHODS BELOW NOT IN USE //
-	/////////////////////////////////////////
-	/*
-	// Update ServerThread with new protocol and send a message of the protocol
-	// to out.println
-	public void updateAllThreads(Protocol protocol) {
-		for (ServerThread thread : serverThreads) {
-			thread.updateProtocol(protocol);
-		}
-	}
-
-	// Send a JSON String to ServerThreads out.println
-	public void updateAllThreads(String message) {
-		for (ServerThread thread : serverThreads) {
-			thread.printMessage(message);
-		}
-	}
-
-	public void updateAllThreads(int status, List<Integer> clientIds) {
-		for (ServerThread thread : serverThreads) {
-			thread.printMessage(Protocol.produceMessage(status, clientIds));
-		}
-	}
-
-	public void updateThread(int status, int clientId) { // (intervals) could be
-															// 2 seperate
-															// methods
-		for (ServerThread thread : serverThreads) {
-			if (thread.getConnectedClientId() == clientId) {
-				thread.printMessage(""); // TODO: produceMessage not compatibe
-											// with cycle
-			}
-		}
-	}
-	*/
 }

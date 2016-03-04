@@ -7,77 +7,64 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 
 /**
- * Custom subclass of AppenderSkeleton. Used by LogGUI to access logger information.
+ * Custom subclass of AppenderSkeleton. Used by LogGUI to access logger
+ * information.
  *
  */
 public class StringAppender extends AppenderSkeleton {
 
-    private ArrayDeque<String> log;
-    private ArrayList<LoggingEvent> events;
-    
-    // public static final Level CYCLE = Level.forName("CYCLE", 100);
+	private ArrayDeque<String> log;
+	private ArrayList<LoggingEvent> events;
 
-    private int size;
+	// public static final Level CYCLE = Level.forName("CYCLE", 100);
 
-    public StringAppender(String name) {
-        this.log = new ArrayDeque<String>();
-        super.setName(name);
-        events = new ArrayList<>();
-    }
-    
-    public void setSize(int size) {
-    	this.size = size;
-    	trimToSize();
-    }
+	private int size;
 
-    public ArrayDeque<String> getLog() {
-        return log;
-    }
-    
-    public ArrayList<LoggingEvent> getEvents() {
-        return events;
-    }
-    
-    public void setEventList(ArrayList<LoggingEvent> listToSet) {
-    	listToSet = events;
-    }
-    
-    /**
-     * Appends an event to ArrayList events.
-     */
-    @Override
+	public StringAppender(String name) {
+		this.log = new ArrayDeque<String>();
+		super.setName(name);
+		events = new ArrayList<>();
+	}
+
+	public void setSize(int size) {
+		this.size = size;
+		trimToSize();
+	}
+
+	public ArrayDeque<String> getLog() {
+		return log;
+	}
+
+	public ArrayList<LoggingEvent> getEvents() {
+		return events;
+	}
+
+	public void setEventList(ArrayList<LoggingEvent> listToSet) {
+		listToSet = events;
+	}
+
+	/**
+	 * Appends an event to ArrayList events.
+	 */
+	@Override
 	public void append(LoggingEvent event) {
-    	/*
-        // Generate message
-        StringBuilder sb = new StringBuilder();
-        String timestamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(event.getTimeStamp());
-        sb.append(timestamp).append(": ");
-        sb.append(event.getLevel().toString()).append(": ");
-        sb.append(event.getLoggerName()).append(": ");
-        sb.append(event.getRenderedMessage().toString());
-        // add it to queue
-        if(size != 0 && log.size() == size) {
-            trimToSize();
-        }
-        log.add(sb.toString());
-        */
-        events.add(event);
-        
-    }
+		events.add(event);
 
-    @Override
-    public void close() {
-        //log = Collections.unmodifiableCollection(log);
-    }
+	}
 
-    @Override
-    public boolean requiresLayout() {
-        return false;
-    }
-    
-    private void trimToSize() {
-    	while (log.size() >= size) {
-    		((ArrayDeque<String>) log).removeFirst();
-    	}
-    }
+	@Override
+	public void close() {
+		// log = Collections.unmodifiableCollection(log);
+	}
+
+	@Override
+	public boolean requiresLayout() {
+		return false;
+	}
+
+	private void trimToSize() {
+		while (log.size() >= size) {
+			((ArrayDeque<String>) log).removeFirst();
+		}
+	}
 }
