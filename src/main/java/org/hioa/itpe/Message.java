@@ -6,6 +6,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Main usage is to map our info going across the TCP socket to a json-string. 
+ * Also defines unique message types to define type of message received.
+ * 
+ */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Message {
 	private int messageId; // Instead of using lastAction. May not be necessary

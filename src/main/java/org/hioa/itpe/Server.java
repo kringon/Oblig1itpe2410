@@ -13,6 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
 
+/**
+ * Container for all the server threads needed for a mulit-client setup
+ *
+ */
 public class Server extends Task {
 	public static int portNumber = 8080;
 	public static String hostName = "127.0.0.1";
@@ -36,7 +40,7 @@ public class Server extends Task {
 
 		boolean listening = true;
 
-		try (ServerSocket serverSocket = new ServerSocket(portNumber);){
+		try (ServerSocket serverSocket = new ServerSocket(portNumber);) {
 			while (listening) {
 				ServerThread thread = new ServerThread(serverSocket.accept());
 				thread.start();
@@ -48,24 +52,12 @@ public class Server extends Task {
 		return null;
 	}
 
-	public void updateAllThreads(int status, List<Integer> clientIds) {
-		for (ServerThread thread : serverThreads) {
-			thread.printMessage(Protocol.produceMessage(status, clientIds));
-		}
-	}
-
-	public void updateThread(int status, int clientId) { // (intervals) could be
-															// 2 seperate
-															// methods
-		for (ServerThread thread : serverThreads) {
-			if (thread.getConnectedClientId() == clientId) {
-				thread.printMessage(""); // TODO: produceMessage not compatibe
-											// with cycle
-			}
-		}
-	}
-
-	// Updates the selected servers.
+	/**
+	 * Notifies all threads belonging to the selected client ids to send
+	 * a new output to their client.
+	 * @param message to send to client
+	 * @param clientIds containing ids of selected clients.
+	 */
 	public void updateThreads(Message message, List<Integer> clientIds) {
 		for (int clientId : clientIds) {
 			for (ServerThread thread : serverThreads) {
@@ -90,10 +82,9 @@ public class Server extends Task {
 	}
 
 	////////////////////////////////////////////
-	//     METHODS BELOW  NOT IN USE       //
+	// METHODS BELOW NOT IN USE //
 	/////////////////////////////////////////
-	
-	
+	/*
 	// Update ServerThread with new protocol and send a message of the protocol
 	// to out.println
 	public void updateAllThreads(Protocol protocol) {
@@ -109,4 +100,21 @@ public class Server extends Task {
 		}
 	}
 
+	public void updateAllThreads(int status, List<Integer> clientIds) {
+		for (ServerThread thread : serverThreads) {
+			thread.printMessage(Protocol.produceMessage(status, clientIds));
+		}
+	}
+
+	public void updateThread(int status, int clientId) { // (intervals) could be
+															// 2 seperate
+															// methods
+		for (ServerThread thread : serverThreads) {
+			if (thread.getConnectedClientId() == clientId) {
+				thread.printMessage(""); // TODO: produceMessage not compatibe
+											// with cycle
+			}
+		}
+	}
+	*/
 }

@@ -7,12 +7,15 @@ import org.apache.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.slf4j.LoggerFactory;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
 
+/**
+ * Created when matching input from a new client. Implements logic to ensure
+ * that the info-stream follows the protocol and act accordingly.
+ */
 public class ServerThread extends Thread {
 
 	private int connectedClientId;
@@ -59,7 +62,7 @@ public class ServerThread extends Thread {
 							if (Thread.interrupted()) {
 								throw new InterruptedException();
 							}
-							// break outerLoop;
+							break outerLoop;
 
 						} else if (output.getMessageType() == Message.ACCEPT_ID_REQUEST) {
 							logger.info(logId() + " Sending accept id request.");
@@ -153,22 +156,6 @@ public class ServerThread extends Thread {
 			id = serverThreadId + "";
 		}
 		return "Server(thread id:" + serverThreadId + ")";
-	}
-
-	//////////////////////////
-	// METHODS UNDER NOT IN USE
-	//////////////////////
-
-	/**
-	 * Updates this thread to a new protocol, and prints a new output from that
-	 * protocol
-	 * 
-	 * @param protocol
-	 *            the protocol to set
-	 */
-	public void updateProtocol(Protocol protocol) {
-		this.protocol = protocol;
-		out.println(protocol.output());
 	}
 
 }

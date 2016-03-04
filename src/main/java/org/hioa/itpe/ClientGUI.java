@@ -14,6 +14,11 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+/**
+ * 
+ * The GUI of the client itself. Displays an image with the traffic light status.
+ *
+ */
 public class ClientGUI {
 	private Stage stage;
 	private ImageView displayedImage;
@@ -21,7 +26,12 @@ public class ClientGUI {
 	private final Client client;
 	private Thread thread;
 	private static Logger logger = Logger.getLogger(ClientGUI.class);
-
+	
+	/**
+	 * Constructor. Initializes a new Client.
+	 * @param hostIp
+	 * @param hostPort
+	 */
 	public ClientGUI(String hostIp, int hostPort) {
 
 		stage = new Stage();
@@ -43,7 +53,9 @@ public class ClientGUI {
 		setOnCloseRequest();
 
 	}
-
+	
+	// Close request for this window. When this window closes, the client gets updated so that it can notify
+	// the server and close its connection properly
 	private void setOnCloseRequest() {
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			public void handle(WindowEvent ev) {
@@ -54,11 +66,19 @@ public class ClientGUI {
 			}
 		});
 	}
-
+	
+	/**
+	 * 
+	 * @return this client
+	 */
 	public Client getClient() {
 		return this.client;
 	}
 	
+	/**
+	 * 
+	 * @return this stage.
+	 */
 	public Stage getStage() {
 		return this.stage;
 	}

@@ -176,7 +176,13 @@ public class App extends Application {
 		btnLog.getStyleClass().add("button-start");
 		btnLog.setOnAction((ActionEvent ae) -> {
 			logger.info("Opening up log");
-			logGui = new LogGUI();
+			if (logGui != null) {
+				if (logGui.getStage() != null) {
+					logGui.getStage().show();
+				}
+			} else {
+					logGui = new LogGUI();
+			}
 		});
 
 		// Add buttons to the hbox and return it

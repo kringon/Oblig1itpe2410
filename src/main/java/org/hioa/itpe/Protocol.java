@@ -16,10 +16,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * 
+ * Defines different types of behaviour depending on what kind of status-update that is sent
+ *
+ */
 public class Protocol {
 
 	private static Logger logger = Logger.getLogger(Protocol.class);
-
+	
+	// Status values:
 	public static final int NONE = 1;
 	public static final int GREEN = 2;
 	public static final int YELLOW = 3;
@@ -45,7 +51,10 @@ public class Protocol {
 		protocolId = protocolIdCounter++;
 	}
 
-	// returns a JSON String
+	/**
+	 * Returns a JSON String representing Client traffic light status
+	 * @return
+	 */
 	public String output() {
 		ObjectMapper mapper = new ObjectMapper();
 		Message message = new Message();
@@ -69,7 +78,12 @@ public class Protocol {
 
 		
 	}
-
+	
+	/**
+	 * 
+	 * @param theInput
+	 * @return
+	 */
 	public String processInput(String theInput) {
 
 		String theOutput = "graphics/none.png";
@@ -97,7 +111,13 @@ public class Protocol {
 	public void setIdList(List<Integer> idList) {
 		this.idList = idList;
 	}
-
+	
+	/**
+	 * Processes the messageType of the received message and does appropriate action
+	 * before returning a new message or null.
+	 * @param message
+	 * @return
+	 */
 	public static Message processClientOutput(Message message) {
 
 		if (message.getMessageType() == Message.REQUEST_ID) {
@@ -128,13 +148,12 @@ public class Protocol {
 		}
 		return null;
 	}
-
+	
 	public static String produceMessage(int status, List<Integer> clientIds) {
 		Message message = new Message();
 		ObjectMapper mapper = new ObjectMapper();
 		message.setIdList(clientIds);
-		try { // Funker ikke message.setStatus(status) ganske greit her, eller
-				// bruker du også verdier untenfor 1-7?
+		try { 
 			switch (status) {
 			case Protocol.GREEN:
 				message.setStatus(Protocol.GREEN);
@@ -189,7 +208,11 @@ public class Protocol {
 			return "Standby";
 		}
 	}
-
+	
+	/**
+	 * Checks external ip.
+	 * @return external ip as String
+	 */
 	public static String getExternalIp() {
 		URL whatismyip;
 		String ip;

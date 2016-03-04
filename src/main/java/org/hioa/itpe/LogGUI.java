@@ -60,7 +60,10 @@ public class LogGUI {
 	private CheckBox warningsCb;
 	private SimpleDateFormat sf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	private volatile int indexOfLastLog = 0;
-
+	
+	/**
+	 * Shows the content of all loggers in a seperate window with a text area.
+	 */
 	public LogGUI() {
 		this.parentGUI = parentGUI;
 		stringAppender = (StringAppender)Logger.getRootLogger().getAppender("String"); 
@@ -69,7 +72,7 @@ public class LogGUI {
 		stage.setTitle("Log");
 		stage.show();
 
-		Scene scene = new Scene(createGridPane(), 800, 400);
+		Scene scene = new Scene(createMainPane(), 800, 400);
 		stage.setScene(scene);
 
 		try {
@@ -85,13 +88,14 @@ public class LogGUI {
 			@Override
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
-					events = stringAppender.getEvents();
+					events = stringAppender.getEvents(); // Get events
 					try {
-						sleep(20);
+						sleep(20); // sleep for 20 ms
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+					// If any new events in the list that are not yet written to textArea, append with these:
 					if (events != null && events.size() > indexOfLastLog + 1) {
 						updateSelected(indexOfLastLog);
 										
@@ -102,14 +106,11 @@ public class LogGUI {
 		};
 		updateTableThread.start();
 
-		
-		 
-
-		 
 
 	}
 	
-	
+	// Helper method. Appends any new events to the text area, or if a new checkbox filter is applied, 
+	// the text area is rewritten from bottom to top with all events.
 	private void updateSelected(int startIndex) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = startIndex; i < events.size(); i++) {
@@ -131,7 +132,8 @@ public class LogGUI {
 			logTextArea.appendText((sb.toString()));		
 		}
 	}
-
+	
+	// Helper method. Appends an event to a sb, with proper format and fields.
 	private void appendEvent(StringBuilder sb, LoggingEvent event) {
 		sb.append(sf.format(event.getTimeStamp())).append(": ");
 		sb.append(event.getLevel().toString()).append(": ");
@@ -139,8 +141,13 @@ public class LogGUI {
 		sb.append(event.getRenderedMessage().toString());
 		sb.append("\n");
 	}
-
-	private GridPane createGridPane() {
+	
+	/**
+	 * Initializes GUI content. Creates a GridPane containing all of the main content of this window.
+	 * 
+	 * @return main GridPane
+	 */
+	private GridPane createMainPane() {
 		GridPane grid = new GridPane();
 		grid.setHgap(10);
 		grid.setVgap(12);
@@ -151,6 +158,7 @@ public class LogGUI {
 		Label titleLabel = new Label("Log output");
 
 		logTextArea = new TextArea();
+		logTextArea.setEditable(false);
 		logTextArea.setPrefRowCount(15);
 		logTextArea.setPrefColumnCount(150);
 
@@ -205,6 +213,10 @@ public class LogGUI {
 		return grid;
 	}
 	
+	/**
+	 * 
+	 * @return this stage
+	 */
 	public Stage getStage() {
 		return stage;
 	}
